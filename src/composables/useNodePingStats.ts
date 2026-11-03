@@ -21,6 +21,15 @@ export interface NodePingStatsState {
   hasData: boolean
 }
 
+export interface NodePingTaskLatency {
+  taskId: number
+  name: string
+  latency: number | null
+  loss: number | null
+  status: 'ok' | 'loss' | 'no-data'
+  history: Array<{ time: string, latency: number | null, lost: boolean }>
+}
+
 interface PingRecord {
   client: string
   task_id: number
@@ -29,6 +38,7 @@ interface PingRecord {
 }
 
 interface MetricLossPoint {
+  taskId: number
   time: string
   value: number
   count: number
@@ -304,6 +314,7 @@ async function loadPingMetricRecords(nodeUuid: string, hours: number, maxCount?:
             continue
 
           metricLossPoints.push({
+            taskId,
             time: point.time,
             value: point.value,
             count: isFiniteNumber(point.count) && point.count > 0 ? point.count : 1,
@@ -632,6 +643,61 @@ function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], 
   }
 }
 
+function buildTaskLatencies(records: PingRecord[], metricStats: PingMetricTaskStats[] = [], metricLossPoints: MetricLossPoint[] = []): NodePingTaskLatency[] {
+  const tasks = new Map<number, NodePingTaskLatency>()
+  const recordsByTask = new Map<number, PingRecord[]>()
+  const lossByTaskAndTime = new Map<string, number>()
+
+  for (const point of metricLossPoints)
+    lossByTaskAndTime.set(`${point.taskId}:${point.time}`, point.value)
+
+  for (const record of records) {
+    const taskRecords = recordsByTask.get(record.task_id) ?? []
+    taskRecords.push(record)
+    recordsByTask.set(record.task_id, taskRecords)
+  }
+
+  for (const stat of metricStats) {
+    const taskId = normalizeTaskId(stat.task_id)
+    if (!Number.isFinite(taskId))
+      continue
+
+    const latency = isFiniteNumber(stat.latest) && stat.latest >= 0 ? stat.latest : null
+    tasks.set(taskId, {
+      taskId,
+      name: stat.name?.trim() || `Task ${stat.task_id}`,
+      latency,
+      loss: stat.total > 0 && !stat.loss_approximate && isFiniteNumber(stat.loss) ? stat.loss : null,
+      status: latency !== null ? 'ok' : stat.total > 0 && stat.valid === 0 ? 'loss' : 'no-data',
+      history: [],
+    })
+  }
+
+  for (const [taskId, taskRecords] of recordsByTask) {
+    if (!Number.isFinite(taskId))
+      continue
+
+    const existing = tasks.get(taskId)
+    const latest = taskRecords.at(-1)!
+    const failed = taskRecords.filter(record => record.value < 0).length
+    const history = taskRecords.map(record => ({
+      time: record.time,
+      latency: record.value >= 0 ? record.value : null,
+      lost: record.value < 0 || (lossByTaskAndTime.get(`${taskId}:${record.time}`) ?? 0) >= 0.5,
+    }))
+    tasks.set(taskId, {
+      taskId,
+      name: existing?.name ?? `Task ${taskId}`,
+      latency: existing && existing.status !== 'no-data' ? existing.latency : latest.value >= 0 ? latest.value : null,
+      loss: existing?.loss ?? failed / taskRecords.length * 100,
+      status: existing && existing.status !== 'no-data' ? existing.status : latest.value >= 0 ? 'ok' : 'loss',
+      history,
+    })
+  }
+
+  return [...tasks.values()]
+}
+
 export function useNodePingStats(
   uuid: MaybeRefOrGetter<string>,
   options?: {
@@ -695,6 +761,22 @@ export function useNodePingStats(
     return records.length || state.metricStats?.length
       ? buildStats(records, state.metricStats, state.metricLossPoints)
       : createEmptyStats()
+  })
+
+  const taskLatencies = computed<NodePingTaskLatency[]>(() => {
+    const { uuid: nodeUuid, hours, maxCount, enabled } = resolved.value
+    if (!enabled || !nodeUuid.trim())
+      return []
+
+    const state = getSharedPingRecordsEntry(hours, maxCount, nodeUuid).data.value
+    if (!state)
+      return []
+
+    return buildTaskLatencies(
+      state.recordsByClient.get(nodeUuid) ?? [],
+      state.metricStats?.filter(stat => stat.entity_id === nodeUuid),
+      state.metricLossPoints,
+    )
   })
 
   // 副作用：按需触发首次共享加载并维护 loading/error，不再命令式写入 stats。
@@ -771,5 +853,6 @@ export function useNodePingStats(
     avgLoss: computed(() => stats.value.avgLoss),
     avgVolatility: computed(() => stats.value.avgVolatility),
     hasData: computed(() => stats.value.hasData),
+    taskLatencies,
   }
 }

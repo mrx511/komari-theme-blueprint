@@ -14,6 +14,7 @@ const emit = defineEmits<{
 const {
   latencyRenderBars,
   lossRenderBars,
+  taskLatencyTooltip,
 } = useNodePingDisplay(() => props.uuid, { enabled: () => props.enabled })
 </script>
 
@@ -21,7 +22,8 @@ const {
   <button
     type="button"
     class="group flex w-full flex-col gap-[1px] pr-4 text-left"
-    aria-label="打开延迟和丢包监测"
+    :title="taskLatencyTooltip || '打开延迟和丢包监测'"
+    :aria-label="taskLatencyTooltip || '打开延迟和丢包监测'"
     @click.stop="emit('click')"
   >
     <div class="group/panel relative items-center gap-1 opacity-80 hover:opacity-100">

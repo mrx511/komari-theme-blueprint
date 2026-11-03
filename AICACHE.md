@@ -741,3 +741,14 @@
 - **验证**：type-check/lint/build ✅；视觉回归 11 绿（line-grid 截图确认渲染正常，线稿风与蓝图契合）。
 - **已知待办**：MVP 单精度档；无右侧地区统计面板；每节点标签（当前地区聚合）；移动端未专项截测；后续可删 cobe（保留双模式先看效果）。
 - **注意事项**：webServer 用 `vite preview`（dist）——改了源码必须 `bun run build` 后再跑 fixture 测试，否则用旧 dist；GitHub Release 验证后确认发布。
+
+## 2026-11-03 · 首页多任务延迟显示（M5，本地完成）
+
+- 目标：同一节点卡片同时展示后台配置的多个延迟监测任务，按任务名称区分延迟值，并保留无数据及丢包状态。
+- 计划：复用 `useNodePingStats` 的共享 Metric／legacy 数据，不新增每张卡片的 Ping 历史请求；通过公开任务列表补全名称与顺序；在 `NodeCard` 增加紧凑任务列表，并让列表视图提示完整内容。
+- 验证范围：类型检查、lint、构建、三任务模拟页面；真实站点的任务关联、无数据与丢包变化仍待部署后确认。
+- 已实现：`useNodePingStats` 从共享 Metric／legacy 数据按任务提取最新延迟；`useNodePingDisplay` 共享加载公开任务名称、关联节点与权重顺序；`NodeCard` 在平均延迟/丢包条下展示多任务数值，`NodePingListCell` 在原生提示中展示完整任务清单。无新增加的每卡历史请求。
+- 验证：本机没有 Bun，改用 pnpm 安装依赖。`pnpm exec vue-tsc --build`、针对改动文件的 ESLint、`pnpm run build` 均通过；模拟三任务的 Playwright 用例通过，Chrome 截图核对卡片无重叠。构建生成 `blueprint-build-f4bbf9f.zip`。尚未接入用户真实 Komari 站点实测。
+- 注意：受沙盒限制，Vite 构建和浏览器测试需要在工作区外权限运行；源码和产物仍位于当前工作区。`bun.lock` 与清单版本未改动。
+- 后续界面调整：移除首页卡片中的平均延迟和平均丢包两块汇总；每个任务改为独立的名称、当前延迟、丢包率及 40 格历史状态条。数据仍复用原有每节点共享请求，Metric 使用任务统计的丢包率，legacy 使用该任务历史样本计算。列表和详情页保持原有结构。
+- 再次验证：`vue-tsc --build`、改动文件 ESLint、生产构建及系统 Chrome 中的三任务首页用例均通过；新主题 ZIP 已重新生成。

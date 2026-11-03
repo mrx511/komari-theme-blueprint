@@ -224,7 +224,9 @@ function buildMetricResponse(
         tags: task ? { task_id: String(task.id), task_name: task.name } : {},
         points: points.map(point => ({
           time: point.time,
-          value: metricValue(key, point.index) + (task?.id ?? 0),
+          value: key === 'ping.loss' && options.pingTaskOrdering
+            ? (task?.id === 30 && point.index === 17 ? 1 : 0)
+            : metricValue(key, point.index) + (task?.id ?? 0),
         })),
       }))
     })
@@ -306,7 +308,7 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
               tags: { task_id: String(task.id), task_name: task.name },
               total: 48,
               valid: 48,
-              loss: 0,
+              loss: task.id === 30 ? 100 / 48 : 0,
               loss_approximate: false,
               min: 40 + task.id,
               max: 120 + task.id,

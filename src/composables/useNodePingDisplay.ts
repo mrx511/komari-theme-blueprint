@@ -1,7 +1,10 @@
 import type { MaybeRefOrGetter } from 'vue'
-import { computed, ref, toValue } from 'vue'
+import type { NodePingTaskLatency } from '@/composables/useNodePingStats'
+import type { PingTaskInfo } from '@/utils/rpc'
+import { computed, ref, shallowRef, toValue, watch } from 'vue'
 import { useNodePingStats } from '@/composables/useNodePingStats'
 import { PING_SUMMARY_MAX_COUNT } from '@/constants/load'
+import { loadPublicPingTasks } from '@/services/metrics.service'
 import { useAppStore } from '@/stores/app'
 import { formatDateTime } from '@/utils/helper'
 
@@ -22,6 +25,30 @@ interface UseNodePingDisplayOptions {
 }
 
 const EMPTY_PING_BAR_COUNT = 20
+const TASK_PING_BAR_COUNT = 40
+const pingTaskCatalog = shallowRef<PingTaskInfo[]>([])
+let pingTaskCatalogLoadedAt = 0
+let pingTaskCatalogPromise: Promise<void> | null = null
+
+function ensurePingTaskCatalog(): Promise<void> {
+  if (Date.now() - pingTaskCatalogLoadedAt < 300_000)
+    return Promise.resolve()
+  if (pingTaskCatalogPromise)
+    return pingTaskCatalogPromise
+
+  pingTaskCatalogPromise = loadPublicPingTasks()
+    .then((tasks) => {
+      pingTaskCatalog.value = [...tasks].sort((left, right) =>
+        (left.weight ?? left.id) - (right.weight ?? right.id) || left.id - right.id,
+      )
+      pingTaskCatalogLoadedAt = Date.now()
+    })
+    .catch(() => {})
+    .finally(() => {
+      pingTaskCatalogPromise = null
+    })
+  return pingTaskCatalogPromise
+}
 
 function getLatencyToneClass(latency: number): string {
   if (latency <= 60)
@@ -45,6 +72,26 @@ function getLossToneClass(loss: number): string {
   if (loss <= 9)
     return 'bg-signal-4 ping-signal-pattern-3'
   return 'bg-signal-5 ping-signal-pattern-4'
+}
+
+function buildTaskBars(history: NodePingTaskLatency['history']): NodePingBar[] {
+  return Array.from({ length: TASK_PING_BAR_COUNT }, (_, index) => {
+    const offset = Math.max(0, TASK_PING_BAR_COUNT - history.length)
+    const bucketIndex = index - offset
+    const start = bucketIndex < 0 ? 0 : Math.floor(bucketIndex * history.length / Math.min(history.length, TASK_PING_BAR_COUNT))
+    const end = bucketIndex < 0 ? 0 : Math.floor((bucketIndex + 1) * history.length / Math.min(history.length, TASK_PING_BAR_COUNT))
+    const points = history.slice(start, end)
+    const latest = points.at(-1)
+    const valid = points.flatMap(point => point.latency === null ? [] : [point.latency])
+    const latency = valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : null
+    const lost = points.some(point => point.lost)
+
+    return {
+      key: `task-${index}`,
+      className: !points.length ? 'bg-muted-foreground/10' : lost ? 'bg-signal-5 ping-signal-pattern-4' : latency === null ? 'bg-muted-foreground/15' : getLatencyToneClass(latency),
+      tooltip: !latest ? '无采样数据' : `${formatDateTime(latest.time, 'HH:mm:ss')}\n${lost ? '丢包' : latency === null ? '无采样数据' : `${Math.round(latency)} ms`}`,
+    }
+  })
 }
 
 export function useNodePingDisplay(
@@ -73,6 +120,37 @@ export function useNodePingDisplay(
     enabled: pingStatsEnabled,
     maxCount: PING_SUMMARY_MAX_COUNT,
   })
+
+  watch(pingStatsEnabled, (enabled) => {
+    if (enabled)
+      void ensurePingTaskCatalog()
+  }, { immediate: true })
+
+  const taskLatencyItems = computed(() => {
+    if (!pingStatsEnabled.value)
+      return []
+
+    const nodeUuid = toValue(uuid)
+    const measured = new Map(pingStats.taskLatencies.value.map(task => [task.taskId, task]))
+    const configured = pingTaskCatalog.value.filter(task =>
+      task.default_on === true || task.clients?.includes(nodeUuid) || measured.has(task.id),
+    )
+    const ordered = [
+      ...configured.map(task => ({ ...measured.get(task.id), taskId: task.id, name: task.name?.trim() || measured.get(task.id)?.name || `Task ${task.id}` })),
+      ...pingStats.taskLatencies.value.filter(task => !configured.some(configuredTask => configuredTask.id === task.taskId)),
+    ]
+
+    return ordered.map(task => ({
+      taskId: task.taskId,
+      name: task.name,
+      status: task.status ?? 'no-data',
+      display: task.status === 'loss' ? '丢包' : task.latency === null || task.latency === undefined ? '无数据' : `${Math.round(task.latency)} ms`,
+      lossDisplay: task.loss === null || task.loss === undefined ? '—' : `${task.loss.toFixed(1)}%`,
+      bars: buildTaskBars(task.history ?? []),
+    }))
+  })
+
+  const taskLatencyTooltip = computed(() => taskLatencyItems.value.map(task => `${task.name}：${task.display}，丢包 ${task.lossDisplay}`).join('\n'))
 
   function buildPingBars(metric: NodePingMetric): NodePingBar[] {
     const points = pingStats.history.value
@@ -202,5 +280,7 @@ export function useNodePingDisplay(
     lossDisplay,
     latencyPanelTooltip,
     lossPanelTooltip,
+    taskLatencyItems,
+    taskLatencyTooltip,
   }
 }
