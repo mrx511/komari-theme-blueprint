@@ -441,33 +441,37 @@ function hasRegion(region: string | null | undefined): boolean {
           </div>
         </div>
 
-        <!-- 每项 Ping 任务的延迟与丢包各有一条历史 -->
+        <!-- 每项 Ping 任务左右并列显示延迟与丢包 -->
         <div v-if="taskLatencyItems.length" class="flex flex-col gap-1.5 rounded-lg bg-slate-500/5 p-2" :class="!props.node.online ? 'opacity-50' : ''">
           <button
             v-for="task in taskLatencyItems"
             :key="task.taskId"
             type="button"
             :data-node-ping-task-id="task.taskId"
-            class="group/ping-task flex min-w-0 flex-col gap-1 text-left"
+            class="group/ping-task flex min-w-0 flex-col gap-1 text-left border-b border-border/40 pb-1.5 last:border-b-0 last:pb-0"
             :title="`${task.name}：${task.display}，丢包 ${task.lossDisplay}`"
             :aria-label="`${props.node.name} ${task.name}延迟 ${task.display}，丢包 ${task.lossDisplay}`"
             @click.stop="emit('pingClick')"
           >
-            <span class="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 text-[11px] leading-none">
-              <span class="min-w-0 truncate font-medium">{{ task.name }}</span>
-              <span class="min-w-12 text-right tabular-nums font-semibold" :class="task.status === 'loss' ? 'text-destructive' : task.status === 'no-data' ? 'text-muted-foreground' : 'text-success'">{{ task.display }}</span>
-              <span class="min-w-10 text-right tabular-nums" :class="task.lossDisplay === '—' ? 'text-muted-foreground' : 'text-warning'">{{ task.lossDisplay }}</span>
-            </span>
-            <span class="flex w-full items-center gap-1">
-              <span class="w-6 shrink-0 text-[9px] leading-none text-muted-foreground">延迟</span>
-              <span data-node-ping-metric="latency" class="grid h-1.5 min-w-0 flex-1 gap-[2px]" :style="{ gridTemplateColumns: `repeat(${task.latencyBars.length}, minmax(0, 1fr))` }">
-                <span v-for="bar in task.latencyBars" :key="bar.key" class="h-full min-w-0 rounded-[2px]" :class="bar.className" :title="bar.tooltip" />
+            <span class="min-w-0 truncate text-[11px] font-medium leading-none">{{ task.name }}</span>
+            <span class="grid w-full grid-cols-2 gap-1.5">
+              <span class="flex min-w-0 flex-col gap-1 rounded-md bg-slate-500/5 p-1.5">
+                <span class="flex min-w-0 items-center justify-between gap-1 text-[10px] leading-none">
+                  <span class="text-muted-foreground">延迟</span>
+                  <span class="truncate tabular-nums font-semibold" :class="task.status === 'loss' ? 'text-destructive' : task.status === 'no-data' ? 'text-muted-foreground' : 'text-success'">{{ task.display }}</span>
+                </span>
+                <span data-node-ping-metric="latency" class="grid h-2 min-w-0 w-full gap-[1px]" :style="{ gridTemplateColumns: `repeat(${task.latencyBars.length}, minmax(0, 1fr))` }">
+                  <span v-for="bar in task.latencyBars" :key="bar.key" class="h-full min-w-0 rounded-[1px]" :class="bar.className" :title="bar.tooltip" />
+                </span>
               </span>
-            </span>
-            <span class="flex w-full items-center gap-1">
-              <span class="w-6 shrink-0 text-[9px] leading-none text-muted-foreground">丢包</span>
-              <span data-node-ping-metric="loss" class="grid h-1.5 min-w-0 flex-1 gap-[2px]" :style="{ gridTemplateColumns: `repeat(${task.lossBars.length}, minmax(0, 1fr))` }">
-                <span v-for="bar in task.lossBars" :key="bar.key" class="h-full min-w-0 rounded-[2px]" :class="bar.className" :title="bar.tooltip" />
+              <span class="flex min-w-0 flex-col gap-1 rounded-md bg-slate-500/5 p-1.5">
+                <span class="flex min-w-0 items-center justify-between gap-1 text-[10px] leading-none">
+                  <span class="text-muted-foreground">丢包</span>
+                  <span class="truncate tabular-nums font-semibold" :class="task.lossDisplay === '—' ? 'text-muted-foreground' : 'text-warning'">{{ task.lossDisplay }}</span>
+                </span>
+                <span data-node-ping-metric="loss" class="grid h-2 min-w-0 w-full gap-[1px]" :style="{ gridTemplateColumns: `repeat(${task.lossBars.length}, minmax(0, 1fr))` }">
+                  <span v-for="bar in task.lossBars" :key="bar.key" class="h-full min-w-0 rounded-[1px]" :class="bar.className" :title="bar.tooltip" />
+                </span>
               </span>
             </span>
           </button>

@@ -25,7 +25,7 @@ interface UseNodePingDisplayOptions {
 }
 
 const EMPTY_PING_BAR_COUNT = 20
-const TASK_PING_BAR_COUNT = 40
+const TASK_PING_BAR_COUNT = 20
 const pingTaskCatalog = shallowRef<PingTaskInfo[]>([])
 let pingTaskCatalogLoadedAt = 0
 let pingTaskCatalogPromise: Promise<void> | null = null
