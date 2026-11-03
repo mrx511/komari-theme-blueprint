@@ -2,9 +2,9 @@
   "name": "blueprint",
   "short": "blueprint",
   "description": "A Blueprint theme for Komari",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "author": "jacob-bytes",
-  "url": "https://github.com/jacob-bytes/komari-theme-blueprint",
+  "url": "https://github.com/mrx511/komari-theme-blueprint",
   "preview": "preview-blueprint.png",
   "configuration": {
     "type": "managed",
