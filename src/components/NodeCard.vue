@@ -441,7 +441,7 @@ function hasRegion(region: string | null | undefined): boolean {
           </div>
         </div>
 
-        <!-- 每项 Ping 任务独立显示延迟、丢包和历史 -->
+        <!-- 每项 Ping 任务的延迟与丢包各有一条历史 -->
         <div v-if="taskLatencyItems.length" class="flex flex-col gap-1.5 rounded-lg bg-slate-500/5 p-2" :class="!props.node.online ? 'opacity-50' : ''">
           <button
             v-for="task in taskLatencyItems"
@@ -458,8 +458,17 @@ function hasRegion(region: string | null | undefined): boolean {
               <span class="min-w-12 text-right tabular-nums font-semibold" :class="task.status === 'loss' ? 'text-destructive' : task.status === 'no-data' ? 'text-muted-foreground' : 'text-success'">{{ task.display }}</span>
               <span class="min-w-10 text-right tabular-nums" :class="task.lossDisplay === '—' ? 'text-muted-foreground' : 'text-warning'">{{ task.lossDisplay }}</span>
             </span>
-            <span class="grid h-2 w-full gap-[2px]" :style="{ gridTemplateColumns: `repeat(${task.bars.length}, minmax(0, 1fr))` }">
-              <span v-for="bar in task.bars" :key="bar.key" class="h-full min-w-0 rounded-[2px]" :class="bar.className" :title="bar.tooltip" />
+            <span class="flex w-full items-center gap-1">
+              <span class="w-6 shrink-0 text-[9px] leading-none text-muted-foreground">延迟</span>
+              <span data-node-ping-metric="latency" class="grid h-1.5 min-w-0 flex-1 gap-[2px]" :style="{ gridTemplateColumns: `repeat(${task.latencyBars.length}, minmax(0, 1fr))` }">
+                <span v-for="bar in task.latencyBars" :key="bar.key" class="h-full min-w-0 rounded-[2px]" :class="bar.className" :title="bar.tooltip" />
+              </span>
+            </span>
+            <span class="flex w-full items-center gap-1">
+              <span class="w-6 shrink-0 text-[9px] leading-none text-muted-foreground">丢包</span>
+              <span data-node-ping-metric="loss" class="grid h-1.5 min-w-0 flex-1 gap-[2px]" :style="{ gridTemplateColumns: `repeat(${task.lossBars.length}, minmax(0, 1fr))` }">
+                <span v-for="bar in task.lossBars" :key="bar.key" class="h-full min-w-0 rounded-[2px]" :class="bar.className" :title="bar.tooltip" />
+              </span>
             </span>
           </button>
         </div>

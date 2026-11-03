@@ -74,7 +74,7 @@ function getLossToneClass(loss: number): string {
   return 'bg-signal-5 ping-signal-pattern-4'
 }
 
-function buildTaskBars(history: NodePingTaskLatency['history']): NodePingBar[] {
+function buildTaskBars(history: NodePingTaskLatency['history'], metric: NodePingMetric): NodePingBar[] {
   return Array.from({ length: TASK_PING_BAR_COUNT }, (_, index) => {
     const offset = Math.max(0, TASK_PING_BAR_COUNT - history.length)
     const bucketIndex = index - offset
@@ -82,14 +82,13 @@ function buildTaskBars(history: NodePingTaskLatency['history']): NodePingBar[] {
     const end = bucketIndex < 0 ? 0 : Math.floor((bucketIndex + 1) * history.length / Math.min(history.length, TASK_PING_BAR_COUNT))
     const points = history.slice(start, end)
     const latest = points.at(-1)
-    const valid = points.flatMap(point => point.latency === null ? [] : [point.latency])
-    const latency = valid.length ? valid.reduce((sum, value) => sum + value, 0) / valid.length : null
-    const lost = points.some(point => point.lost)
+    const valid = points.flatMap(point => point[metric] === null ? [] : [point[metric]!])
+    const value = valid.length ? valid.reduce((sum, current) => sum + current, 0) / valid.length : null
 
     return {
-      key: `task-${index}`,
-      className: !points.length ? 'bg-muted-foreground/10' : lost ? 'bg-signal-5 ping-signal-pattern-4' : latency === null ? 'bg-muted-foreground/15' : getLatencyToneClass(latency),
-      tooltip: !latest ? '无采样数据' : `${formatDateTime(latest.time, 'HH:mm:ss')}\n${lost ? '丢包' : latency === null ? '无采样数据' : `${Math.round(latency)} ms`}`,
+      key: `task-${metric}-${index}`,
+      className: !points.length ? 'bg-muted-foreground/10' : value === null ? 'bg-muted-foreground/15' : metric === 'latency' ? getLatencyToneClass(value) : getLossToneClass(value),
+      tooltip: !latest ? '无采样数据' : `${formatDateTime(latest.time, 'HH:mm:ss')}\n${value === null ? '无采样数据' : metric === 'latency' ? `${Math.round(value)} ms` : `丢包 ${value.toFixed(1)}%`}`,
     }
   })
 }
@@ -146,7 +145,8 @@ export function useNodePingDisplay(
       status: task.status ?? 'no-data',
       display: task.status === 'loss' ? '丢包' : task.latency === null || task.latency === undefined ? '无数据' : `${Math.round(task.latency)} ms`,
       lossDisplay: task.loss === null || task.loss === undefined ? '—' : `${task.loss.toFixed(1)}%`,
-      bars: buildTaskBars(task.history ?? []),
+      latencyBars: buildTaskBars(task.history ?? [], 'latency'),
+      lossBars: buildTaskBars(task.history ?? [], 'loss'),
     }))
   })
 

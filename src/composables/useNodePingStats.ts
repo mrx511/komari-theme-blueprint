@@ -27,7 +27,7 @@ export interface NodePingTaskLatency {
   latency: number | null
   loss: number | null
   status: 'ok' | 'loss' | 'no-data'
-  history: Array<{ time: string, latency: number | null, lost: boolean }>
+  history: Array<{ time: string, latency: number | null, loss: number | null }>
 }
 
 interface PingRecord {
@@ -646,15 +646,30 @@ function buildStats(records: PingRecord[], metricStats?: PingMetricTaskStats[], 
 function buildTaskLatencies(records: PingRecord[], metricStats: PingMetricTaskStats[] = [], metricLossPoints: MetricLossPoint[] = []): NodePingTaskLatency[] {
   const tasks = new Map<number, NodePingTaskLatency>()
   const recordsByTask = new Map<number, PingRecord[]>()
-  const lossByTaskAndTime = new Map<string, number>()
-
-  for (const point of metricLossPoints)
-    lossByTaskAndTime.set(`${point.taskId}:${point.time}`, point.value)
+  const historyByTask = new Map<number, Map<string, NodePingTaskLatency['history'][number]>>()
 
   for (const record of records) {
     const taskRecords = recordsByTask.get(record.task_id) ?? []
     taskRecords.push(record)
     recordsByTask.set(record.task_id, taskRecords)
+    const history = historyByTask.get(record.task_id) ?? new Map()
+    history.set(record.time, {
+      time: record.time,
+      latency: record.value >= 0 ? record.value : null,
+      loss: record.value >= 0 ? 0 : 100,
+    })
+    historyByTask.set(record.task_id, history)
+  }
+
+  for (const point of metricLossPoints) {
+    const history = historyByTask.get(point.taskId) ?? new Map()
+    const existing = history.get(point.time)
+    history.set(point.time, {
+      time: point.time,
+      latency: existing?.latency ?? null,
+      loss: Math.min(100, Math.max(0, point.value * 100)),
+    })
+    historyByTask.set(point.taskId, history)
   }
 
   for (const stat of metricStats) {
@@ -673,25 +688,21 @@ function buildTaskLatencies(records: PingRecord[], metricStats: PingMetricTaskSt
     })
   }
 
-  for (const [taskId, taskRecords] of recordsByTask) {
+  for (const [taskId, taskHistory] of historyByTask) {
     if (!Number.isFinite(taskId))
       continue
 
     const existing = tasks.get(taskId)
-    const latest = taskRecords.at(-1)!
+    const taskRecords = recordsByTask.get(taskId) ?? []
+    const latest = taskRecords.at(-1)
     const failed = taskRecords.filter(record => record.value < 0).length
-    const history = taskRecords.map(record => ({
-      time: record.time,
-      latency: record.value >= 0 ? record.value : null,
-      lost: record.value < 0 || (lossByTaskAndTime.get(`${taskId}:${record.time}`) ?? 0) >= 0.5,
-    }))
     tasks.set(taskId, {
       taskId,
       name: existing?.name ?? `Task ${taskId}`,
-      latency: existing && existing.status !== 'no-data' ? existing.latency : latest.value >= 0 ? latest.value : null,
-      loss: existing?.loss ?? failed / taskRecords.length * 100,
-      status: existing && existing.status !== 'no-data' ? existing.status : latest.value >= 0 ? 'ok' : 'loss',
-      history,
+      latency: existing && existing.status !== 'no-data' ? existing.latency : latest && latest.value >= 0 ? latest.value : null,
+      loss: existing?.loss ?? (taskRecords.length ? failed / taskRecords.length * 100 : null),
+      status: existing && existing.status !== 'no-data' ? existing.status : latest ? latest.value >= 0 ? 'ok' : 'loss' : 'no-data',
+      history: [...taskHistory.values()].sort((left, right) => new Date(left.time).getTime() - new Date(right.time).getTime()),
     })
   }
 
