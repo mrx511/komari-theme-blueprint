@@ -1,7 +1,7 @@
 {
   "name": "blueprint",
   "short": "blueprint",
-  "description": "A Blueprint theme for Komari",
+  "description": "A Blueprint theme for Komari with per-task Ping monitoring",
   "version": "0.1.20",
   "author": "jacob-bytes",
   "url": "https://github.com/mrx511/komari-theme-blueprint",
