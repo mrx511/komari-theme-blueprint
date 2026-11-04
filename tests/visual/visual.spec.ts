@@ -405,3 +405,19 @@ test('home node cards show each ping task latency in backend order', async ({ pa
   if (latencyBox && lossBox)
     expect(Math.abs(latencyBox.y - lossBox.y)).toBeLessThan(2)
 })
+
+test('full ping loss does not paint the latency history green', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await installKomariFixture(page, { fullPingLoss: true })
+  await openStablePage(page)
+
+  const task = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' }).locator('[data-node-ping-task-id]').first()
+  await expect(task).toContainText('丢包')
+  await expect(task).toContainText('100.0%')
+  const latencyBars = task.locator('[data-node-ping-metric="latency"]')
+  const lossBars = task.locator('[data-node-ping-metric="loss"]')
+  await expect(latencyBars.locator('.bg-signal-5')).toHaveCount(20)
+  await expect(latencyBars.locator('.bg-signal-1')).toHaveCount(0)
+  await expect(lossBars.locator('.bg-signal-5')).toHaveCount(20)
+  await expect(latencyBars.locator('span').first()).toHaveAttribute('title', /全部丢包，未取得有效延迟/)
+})

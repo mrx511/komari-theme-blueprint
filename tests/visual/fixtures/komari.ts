@@ -27,6 +27,7 @@ export interface VisualFixtureOptions {
   expiryThresholds?: boolean
   missingCpuMetricHistory?: boolean
   pingTaskOrdering?: boolean
+  fullPingLoss?: boolean
   generalCardKeys?: string[]
 }
 
@@ -225,9 +226,11 @@ function buildMetricResponse(
         tags: task ? { task_id: String(task.id), task_name: task.name } : {},
         points: points.map(point => ({
           time: point.time,
-          value: key === 'ping.loss' && options.pingTaskOrdering
-            ? (task?.id === 30 && point.index === 17 ? 1 : 0)
-            : metricValue(key, point.index) + (task?.id ?? 0),
+          value: key === 'ping.loss' && options.fullPingLoss
+            ? 1
+            : key === 'ping.loss' && options.pingTaskOrdering
+              ? (task?.id === 30 && point.index === 17 ? 1 : 0)
+              : metricValue(key, point.index) + (task?.id ?? 0),
         })),
       }))
     })
@@ -296,7 +299,7 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
       result = buildMetricResponse(payload.params ?? {}, options, pingTasks)
       break
     case 'public:getPingMetricStats':
-      result = options.pingTaskOrdering
+      result = options.pingTaskOrdering || options.fullPingLoss
         ? {
             start: FIXED_NOW,
             end: FIXED_NOW,
@@ -308,13 +311,13 @@ async function handleRpc(route: Route, clientFixtures = clients, options: Visual
               interval: task.interval,
               tags: { task_id: String(task.id), task_name: task.name },
               total: 48,
-              valid: 48,
-              loss: task.id === 30 ? 100 / 48 : 0,
+              valid: options.fullPingLoss ? 0 : 48,
+              loss: options.fullPingLoss ? 100 : task.id === 30 ? 100 / 48 : 0,
               loss_approximate: false,
               min: 40 + task.id,
               max: 120 + task.id,
               avg: 80 + task.id,
-              latest: 90 + task.id,
+              latest: options.fullPingLoss ? null : 90 + task.id,
             })),
             count: metricPingTasks.length,
           }
