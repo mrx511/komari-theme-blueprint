@@ -2,7 +2,7 @@
   "name": "blueprint",
   "short": "blueprint",
   "description": "A Blueprint theme for Komari with per-task Ping monitoring",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "author": "mrx511",
   "url": "https://github.com/mrx511/komari-theme-blueprint",
   "preview": "preview-blueprint.png",
@@ -12,6 +12,7 @@
     "data": [
       { "name": "01 · 基础与外观", "type": "title" },
       { "key": "themeMode", "name": "默认主题模式", "type": "select", "default": "beijing", "options": "beijing,light,dark", "help": "beijing=北京时间自动； light=亮色； dark=暗色。" },
+      { "key": "themePalette", "name": "主题配色", "type": "select", "default": "blueprint", "options": "blueprint,emerald,violet,amber", "help": "blueprint=经典蓝图蓝； emerald=翠绿； violet=紫晶； amber=琥珀。配色与浅色/深色模式独立。" },
       { "key": "dataUpdateInterval", "name": "数据更新间隔", "type": "number", "default": 3, "help": "实时数据刷新间隔，单位：秒（建议 1-10 秒）" },
       { "key": "rpcTransportMode", "name": "RPC 连接模式", "type": "select", "default": "http", "options": "http,websocket", "help": "HTTP 兼容性更好；反代支持时可改 websocket。" },
       { "key": "defaultViewMode", "name": "默认视图模式", "type": "select", "default": "card", "options": "card,list", "help": "节点列表的默认显示模式" },

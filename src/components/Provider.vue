@@ -27,6 +27,17 @@ watch(
   },
   { immediate: true },
 )
+
+watch(
+  () => appStore.themePalette,
+  (palette, previous) => {
+    const root = document.documentElement
+    if (previous)
+      root.classList.remove(`palette-${previous}`)
+    root.classList.add(`palette-${palette}`)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

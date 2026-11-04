@@ -155,7 +155,22 @@ const cobeLabels = computed(() => regionClusters.value.map(cluster => ({
 })))
 
 const themeColors = computed(() => {
+  const palette = appStore.themePalette
   if (appStore.isDark) {
+    if (palette !== 'blueprint') {
+      const hues = {
+        emerald: { marker: [0.22, 0.91, 0.60], glow: [0.23, 0.82, 0.53], base: [0.03, 0.16, 0.12] },
+        violet: { marker: [0.76, 0.59, 1.00], glow: [0.64, 0.43, 0.93], base: [0.12, 0.07, 0.23] },
+        amber: { marker: [1.00, 0.73, 0.29], glow: [0.95, 0.59, 0.16], base: [0.22, 0.12, 0.04] },
+      }[palette]
+      return {
+        dark: 1,
+        mapBrightness: 11,
+        baseColor: hues.base as [number, number, number],
+        markerColor: hues.marker as [number, number, number],
+        glowColor: hues.glow as [number, number, number],
+      }
+    }
     // 暗色（晒图蓝纸面）：深高科技蓝球体 + 荧光青蓝点阵，与背景拉开亮度阶梯
     return {
       dark: 1,
@@ -163,6 +178,20 @@ const themeColors = computed(() => {
       baseColor: [0.04, 0.10, 0.20] as [number, number, number], // ≈ #0A1933 深高科技蓝
       markerColor: [0.0, 0.94, 1.0] as [number, number, number], // #00F0FF 荧光青蓝
       glowColor: [0.0, 0.85, 1.0] as [number, number, number], // 青蓝球面散射
+    }
+  }
+  if (palette !== 'blueprint') {
+    const hues = {
+      emerald: { marker: [0.09, 0.52, 0.34], glow: [0.78, 0.94, 0.83] },
+      violet: { marker: [0.44, 0.28, 0.68], glow: [0.90, 0.83, 0.98] },
+      amber: { marker: [0.62, 0.36, 0.08], glow: [0.99, 0.89, 0.70] },
+    }[palette]
+    return {
+      dark: 0,
+      mapBrightness: 10,
+      baseColor: [0.98, 0.98, 0.99] as [number, number, number],
+      markerColor: hues.marker as [number, number, number],
+      glowColor: hues.glow as [number, number, number],
     }
   }
   // 亮色（白图）：保持"白球 + 墨蓝点阵"，视觉已协调，不动
@@ -291,7 +320,7 @@ onBeforeUnmount(() => {
   globe = null
 })
 
-watch(() => appStore.isDark, async () => {
+watch(() => [appStore.isDark, appStore.themePalette], async () => {
   await rebuildGlobe()
 })
 

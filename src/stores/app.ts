@@ -8,6 +8,7 @@ import { getAuthSession, requirePermission, setAuthSessionFromLogin, verifyLogin
 
 export type ThemeMode = 'auto' | 'light' | 'dark'
 export type ManagedThemeMode = 'beijing' | 'light' | 'dark'
+export type ThemePalette = 'blueprint' | 'emerald' | 'violet' | 'amber'
 export type GeneralCardKey
   = | 'currentTime'
     | 'memory'
@@ -981,6 +982,11 @@ const useAppStore = defineStore('app', () => {
 
   const colorVisionMode = computed<ColorVisionMode>(() => parseColorVisionMode(themeSettings.value.colorVisionMode))
 
+  const themePalette = computed<ThemePalette>(() => {
+    const value = themeSettings.value.themePalette
+    return value === 'emerald' || value === 'violet' || value === 'amber' ? value : 'blueprint'
+  })
+
   const colorVisionFriendly = computed<boolean>(() => colorVisionMode.value === 'accessible')
 
   const globeRadarEnabled = computed<boolean>(() => readBooleanSetting(themeSettings.value, 'globeRadarEnabled', true))
@@ -1225,6 +1231,7 @@ const useAppStore = defineStore('app', () => {
     homeToolsEnabled,
     homeAdvancedToolsVisible,
     colorVisionMode,
+    themePalette,
     globeRadarEnabled,
     colorVisionFriendly,
     visitorAuditSupported,

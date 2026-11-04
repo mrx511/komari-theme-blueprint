@@ -48,6 +48,7 @@
   --chart-5: #7a6bb5;
   --radius: 0.125rem;
   --font-sans: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --grid-ink: 29 78 137;
   /* 地球外圈大气层发光：亮色极淡，暗色荧光青蓝 */
   --globe-glow: rgb(100 160 255 / 0.18);
   /* 线状图纸地球（line-grid）配色 */
@@ -101,6 +102,7 @@
   --chart-3: #ffb000;
   --chart-4: #ff8f86;
   --chart-5: #b8a8f0;
+  --grid-ink: 233 242 255;
   --globe-glow: rgb(0 240 255 / 0.45);
   /* 线状图纸地球（line-grid）配色 · 晒图蓝 */
   --globe-rim: rgb(233 242 255 / 0.28);
@@ -227,6 +229,101 @@ html.legacy-webkit.dark {
   --border: #3a5f92;
   --input: #3a5f92;
   --ring: #7ba0d4;
+}
+
+/* 配色与浅色/深色模式独立；默认 blueprint 使用上面的原始设计令牌。 */
+html.palette-emerald {
+  --palette-paper: #f5faf7;
+  --palette-ink: #176345;
+  --palette-secondary: #e7f3ec;
+  --palette-muted: #44765e;
+  --palette-grid-ink: 23 99 69;
+  --palette-glow: rgb(43 180 119 / 0.2);
+}
+
+html.palette-emerald.dark {
+  --palette-paper: #103f32;
+  --palette-ink: #e6fff2;
+  --palette-secondary: #0b3228;
+  --palette-muted: #aed8c3;
+  --palette-grid-ink: 230 255 242;
+  --palette-glow: rgb(82 236 168 / 0.38);
+}
+
+html.palette-violet {
+  --palette-paper: #faf8fd;
+  --palette-ink: #60438a;
+  --palette-secondary: #f0ebf8;
+  --palette-muted: #766393;
+  --palette-grid-ink: 96 67 138;
+  --palette-glow: rgb(160 112 220 / 0.19);
+}
+
+html.palette-violet.dark {
+  --palette-paper: #332550;
+  --palette-ink: #f4ebff;
+  --palette-secondary: #291d42;
+  --palette-muted: #c7b7dd;
+  --palette-grid-ink: 244 235 255;
+  --palette-glow: rgb(194 151 255 / 0.35);
+}
+
+html.palette-amber {
+  --palette-paper: #fffaf2;
+  --palette-ink: #87551a;
+  --palette-secondary: #f7eddc;
+  --palette-muted: #8b6d49;
+  --palette-grid-ink: 135 85 26;
+  --palette-glow: rgb(232 155 48 / 0.19);
+}
+
+html.palette-amber.dark {
+  --palette-paper: #513417;
+  --palette-ink: #fff3dc;
+  --palette-secondary: #3e290f;
+  --palette-muted: #e3cba7;
+  --palette-grid-ink: 255 243 220;
+  --palette-glow: rgb(255 184 81 / 0.36);
+}
+
+html:is(.palette-emerald, .palette-violet, .palette-amber) {
+  --background: var(--palette-paper);
+  --foreground: var(--palette-ink);
+  --card: var(--palette-paper);
+  --card-foreground: var(--palette-ink);
+  --popover: var(--palette-paper);
+  --popover-foreground: var(--palette-ink);
+  --primary: var(--palette-ink);
+  --primary-foreground: var(--palette-paper);
+  --secondary: var(--palette-secondary);
+  --secondary-foreground: var(--palette-ink);
+  --muted: var(--palette-secondary);
+  --muted-foreground: var(--palette-muted);
+  --accent: var(--palette-secondary);
+  --accent-foreground: var(--palette-ink);
+  --info: var(--palette-ink);
+  --info-foreground: var(--palette-paper);
+  --selection: var(--palette-ink);
+  --border: rgb(var(--palette-grid-ink) / 0.28);
+  --input: rgb(var(--palette-grid-ink) / 0.28);
+  --ring: rgb(var(--palette-grid-ink) / 0.55);
+  --chart-1: var(--palette-ink);
+  --grid-ink: var(--palette-grid-ink);
+  --globe-glow: var(--palette-glow);
+  --globe-rim: rgb(var(--palette-grid-ink) / 0.25);
+  --globe-grid: rgb(var(--palette-grid-ink) / 0.22);
+  --globe-coast: rgb(var(--palette-grid-ink) / 0.82);
+  --globe-point: var(--palette-ink);
+  --globe-text: var(--palette-ink);
+}
+
+html:is(.palette-emerald, .palette-violet, .palette-amber).dark {
+  --border: rgb(var(--palette-grid-ink) / 0.22);
+  --input: rgb(var(--palette-grid-ink) / 0.22);
+  --ring: rgb(var(--palette-grid-ink) / 0.48);
+  --globe-rim: rgb(var(--palette-grid-ink) / 0.28);
+  --globe-grid: rgb(var(--palette-grid-ink) / 0.18);
+  --globe-coast: rgb(var(--palette-grid-ink) / 0.75);
 }
 
 html.color-vision-friendly {

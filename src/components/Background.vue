@@ -185,29 +185,29 @@ onUnmounted(() => {
     radial-gradient(120% 90% at 50% 0%, transparent 55%, var(--secondary) 100%),
     repeating-linear-gradient(
       0deg,
-      rgb(29 78 137 / 0.033) 0,
-      rgb(29 78 137 / 0.028) 1px,
+      rgb(var(--grid-ink) / 0.033) 0,
+      rgb(var(--grid-ink) / 0.028) 1px,
       transparent 1px,
       transparent 12px
     ),
     repeating-linear-gradient(
       90deg,
-      rgb(29 78 137 / 0.033) 0,
-      rgb(29 78 137 / 0.028) 1px,
+      rgb(var(--grid-ink) / 0.033) 0,
+      rgb(var(--grid-ink) / 0.028) 1px,
       transparent 1px,
       transparent 12px
     ),
     repeating-linear-gradient(
       0deg,
-      rgb(29 78 137 / 0.06) 0,
-      rgb(29 78 137 / 0.055) 1px,
+      rgb(var(--grid-ink) / 0.06) 0,
+      rgb(var(--grid-ink) / 0.055) 1px,
       transparent 1px,
       transparent 60px
     ),
     repeating-linear-gradient(
       90deg,
-      rgb(29 78 137 / 0.06) 0,
-      rgb(29 78 137 / 0.055) 1px,
+      rgb(var(--grid-ink) / 0.06) 0,
+      rgb(var(--grid-ink) / 0.055) 1px,
       transparent 1px,
       transparent 60px
     );
@@ -218,29 +218,29 @@ onUnmounted(() => {
     radial-gradient(120% 90% at 50% 0%, transparent 55%, var(--secondary) 100%),
     repeating-linear-gradient(
       0deg,
-      rgb(233 242 255 / 0.033) 0,
-      rgb(233 242 255 / 0.028) 1px,
+      rgb(var(--grid-ink) / 0.033) 0,
+      rgb(var(--grid-ink) / 0.028) 1px,
       transparent 1px,
       transparent 12px
     ),
     repeating-linear-gradient(
       90deg,
-      rgb(233 242 255 / 0.033) 0,
-      rgb(233 242 255 / 0.028) 1px,
+      rgb(var(--grid-ink) / 0.033) 0,
+      rgb(var(--grid-ink) / 0.028) 1px,
       transparent 1px,
       transparent 12px
     ),
     repeating-linear-gradient(
       0deg,
-      rgb(233 242 255 / 0.054) 0,
-      rgb(233 242 255 / 0.05) 1px,
+      rgb(var(--grid-ink) / 0.054) 0,
+      rgb(var(--grid-ink) / 0.05) 1px,
       transparent 1px,
       transparent 60px
     ),
     repeating-linear-gradient(
       90deg,
-      rgb(233 242 255 / 0.054) 0,
-      rgb(233 242 255 / 0.05) 1px,
+      rgb(var(--grid-ink) / 0.054) 0,
+      rgb(var(--grid-ink) / 0.05) 1px,
       transparent 1px,
       transparent 60px
     );

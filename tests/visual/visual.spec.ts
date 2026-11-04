@@ -71,6 +71,36 @@ test('blueprint schedule renders grouped rows', async ({ page }) => {
 
 // ===== 节点卡片 / 列表视图（默认视图，无需切换） =====
 
+for (const [palette, lightInk, darkInk] of [
+  ['emerald', '#176345', '#e6fff2'],
+  ['violet', '#60438a', '#f4ebff'],
+  ['amber', '#87551a', '#fff3dc'],
+] as const) {
+  for (const dark of [false, true]) {
+    test(`${palette} palette follows ${dark ? 'dark' : 'light'} mode`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 })
+      await installKomariFixture(page, { dark, themePalette: palette })
+      await openStablePage(page)
+
+      const colors = await page.locator('html').evaluate((element, currentPalette) => {
+        const style = getComputedStyle(element)
+        return {
+          paletteClass: element.classList.contains(`palette-${currentPalette}`),
+          darkClass: element.classList.contains('dark'),
+          foreground: style.getPropertyValue('--foreground').trim(),
+          globe: style.getPropertyValue('--globe-point').trim(),
+          grid: style.getPropertyValue('--grid-ink').trim(),
+        }
+      }, palette)
+      expect(colors.paletteClass).toBe(true)
+      expect(colors.darkClass).toBe(dark)
+      expect(colors.foreground).toBe(dark ? darkInk : lightInk)
+      expect(colors.globe).toBe(dark ? darkInk : lightInk)
+      expect(colors.grid).not.toBe('29 78 137')
+    })
+  }
+}
+
 test('nodes tool view renders card grid', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 })
   await installKomariFixture(page)

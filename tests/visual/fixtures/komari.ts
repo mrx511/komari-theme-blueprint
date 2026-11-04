@@ -17,6 +17,7 @@ const REGION_FIXTURES = [
 
 export interface VisualFixtureOptions {
   dark?: boolean
+  themePalette?: 'blueprint' | 'emerald' | 'violet' | 'amber'
   earthRenderer?: 'cobe' | 'realistic' | 'tiled'
   colorVisionFriendly?: boolean
   viewMode?: 'card' | 'list'
@@ -346,6 +347,7 @@ export async function installKomariFixture(page: Page, options: VisualFixtureOpt
     : clients
   const settings = {
     themeMode: options.dark ? 'dark' : 'light',
+    themePalette: options.themePalette ?? 'blueprint',
     dataUpdateInterval: 60,
     rpcTransportMode: 'http',
     defaultViewMode: options.viewMode ?? 'card',
