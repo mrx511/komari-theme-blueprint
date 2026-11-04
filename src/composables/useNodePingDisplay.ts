@@ -150,7 +150,7 @@ export function useNodePingDisplay(
     }))
   })
 
-  const taskLatencyTooltip = computed(() => taskLatencyItems.value.map(task => `${task.name}：${task.display}，丢包 ${task.lossDisplay}`).join('\n'))
+  const taskLatencyTooltip = computed(() => taskLatencyItems.value.map(task => `${task.name}：最近延迟 ${task.display}，近1小时丢包 ${task.lossDisplay}`).join('\n'))
 
   function buildPingBars(metric: NodePingMetric): NodePingBar[] {
     const points = pingStats.history.value

@@ -742,23 +742,23 @@ const earthClass = computed(() => {
 })
 const cardGridClass = computed(() => {
   if (!showEarth.value)
-    return 'col-span-1 grid grid-cols-3 md:grid-cols-6 gap-2'
+    return 'col-span-1 grid grid-cols-2 md:grid-cols-6 gap-2'
 
   if (isTiledEarth.value)
     return 'col-span-12 row-start-1 z-9 grid grid-cols-12 auto-rows-[4.75rem] sm:auto-rows-[5rem] md:auto-rows-[5.8rem] gap-2 sm:gap-3'
 
   return hasExtraCards.value
-    ? 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:h-auto md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5rem] md:auto-rows-[7rem] gap-2'
-    : 'h-42 mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:h-auto md:col-span-6 md:row-start-1 grid grid-cols-12 grid-rows-2 gap-2'
+    ? 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:h-auto md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5.75rem] md:auto-rows-[7rem] gap-2'
+    : 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5.75rem] md:auto-rows-[7rem] gap-2'
 })
-const cardClass = 'group relative z-10 h-full bg-card/75 backdrop-blur-sm md:bg-card md:backdrop-blur-none border-border hover:bg-secondary transition-all'
+const cardClass = 'group relative z-10 h-full min-w-0 bg-card/75 backdrop-blur-sm md:bg-card md:backdrop-blur-none border-border hover:bg-secondary transition-all'
 const cardPositionClasses = [
-  'col-span-4 row-span-1 col-start-1 row-start-1',
-  'col-span-4 row-span-1 col-start-1 row-start-2',
-  'col-span-4 row-span-1 col-start-5 row-start-1',
-  'col-span-4 row-span-1 col-start-5 row-start-2',
-  'col-span-4 row-span-1 col-start-9 row-start-1',
-  'col-span-4 row-span-1 col-start-9 row-start-2',
+  'col-span-6 md:col-span-4 md:col-start-1 md:row-start-1',
+  'col-span-6 md:col-span-4 md:col-start-1 md:row-start-2',
+  'col-span-6 md:col-span-4 md:col-start-5 md:row-start-1',
+  'col-span-6 md:col-span-4 md:col-start-5 md:row-start-2',
+  'col-span-6 md:col-span-4 md:col-start-9 md:row-start-1',
+  'col-span-6 md:col-span-4 md:col-start-9 md:row-start-2',
 ]
 const tiledCardPositionClasses = [
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-1 row-start-1',
@@ -770,7 +770,7 @@ const tiledCardPositionClasses = [
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-7 row-start-4 sm:row-start-2',
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-10 row-start-4 sm:row-start-2',
 ]
-const unitClass = 'text-[11px] md:text-xs font-medium text-muted-foreground truncate'
+const unitClass = 'min-w-0 text-[11px] md:text-xs font-medium text-muted-foreground whitespace-normal break-words md:truncate'
 
 function getCardPositionClass(index: number): string {
   if (!showEarth.value)
@@ -779,7 +779,7 @@ function getCardPositionClass(index: number): string {
   if (isTiledEarth.value)
     return tiledCardPositionClasses[index] ?? 'col-span-6 sm:col-span-3 row-span-1'
 
-  return cardPositionClasses[index] ?? 'col-span-4 row-span-1'
+  return cardPositionClasses[index] ?? 'col-span-6 md:col-span-4'
 }
 
 function activateCard(card: GeneralMetricCard) {
@@ -865,19 +865,19 @@ onMounted(async () => {
             as="span"
             placement="top"
             :content="card.tooltip"
-            class="min-w-0"
+            class="block w-full min-w-0"
             content-class="whitespace-pre px-2 py-1 left-0 -translate-x-0 leading-normal"
           >
             <Transition v-bind="metricSwitchTransitionProps">
               <div
                 :key="`${card.key}-${summaryTransitionKey}`"
-                class="flex items-baseline gap-1 min-w-0"
+                class="flex min-w-0 flex-col items-start gap-0.5 md:flex-row md:items-baseline md:gap-1"
                 :style="getMetricSwitchStyle(index)"
               >
-                <span class="text-[11px] sm:text-md md:text-2xl font-bold leading-none tracking-tight truncate">
+                <span data-general-card-value class="min-w-0 max-w-full break-all text-sm md:text-2xl font-bold leading-none tracking-tight md:truncate">
                   {{ card.value }}
                 </span>
-                <span v-if="card.unit" :class="unitClass">
+                <span v-if="card.unit" data-general-card-unit :class="unitClass">
                   {{ card.unit }}
                 </span>
               </div>

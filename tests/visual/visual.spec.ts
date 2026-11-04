@@ -82,6 +82,34 @@ test('nodes tool view renders card grid', async ({ page }) => {
   await expect(page).toHaveScreenshot('nodes-card-desktop.png', { fullPage: false })
 })
 
+test('mobile overview cards show complete values in two columns', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await installKomariFixture(page)
+  await openStablePage(page)
+
+  const cards = page.locator('[data-general-card-key]')
+  await expect(cards).toHaveCount(6)
+  const first = await cards.nth(0).boundingBox()
+  const second = await cards.nth(1).boundingBox()
+  const third = await cards.nth(2).boundingBox()
+  expect(first && second && third).toBeTruthy()
+  expect(Math.abs(first!.y - second!.y)).toBeLessThan(2)
+  expect(third!.y).toBeGreaterThan(first!.y + first!.height - 2)
+
+  for (const card of await cards.all()) {
+    for (const value of await card.locator('[data-general-card-value], [data-general-card-unit]').all()) {
+      expect(await value.evaluate((element) => {
+        const style = getComputedStyle(element)
+        return style.textOverflow !== 'ellipsis' && element.scrollWidth <= element.clientWidth + 1
+      })).toBe(true)
+    }
+  }
+
+  const pingTask = page.locator('[data-node-ping-task-id]').first()
+  await expect(pingTask).toContainText('最近延迟')
+  await expect(pingTask).toContainText('1小时丢包')
+})
+
 test('nodes tool view mini card icons remain accessible', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await installKomariFixture(page, { nodeCardSize: 'mini' })

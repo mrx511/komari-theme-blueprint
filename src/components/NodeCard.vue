@@ -449,15 +449,15 @@ function hasRegion(region: string | null | undefined): boolean {
             type="button"
             :data-node-ping-task-id="task.taskId"
             class="group/ping-task flex min-w-0 flex-col gap-1 text-left border-b border-border/40 pb-1.5 last:border-b-0 last:pb-0"
-            :title="`${task.name}：${task.display}，丢包 ${task.lossDisplay}`"
-            :aria-label="`${props.node.name} ${task.name}延迟 ${task.display}，丢包 ${task.lossDisplay}`"
+            :title="`${task.name}：最近延迟 ${task.display}，近1小时丢包 ${task.lossDisplay}；监测记录约每分钟更新`"
+            :aria-label="`${props.node.name} ${task.name}最近延迟 ${task.display}，近1小时丢包 ${task.lossDisplay}`"
             @click.stop="emit('pingClick')"
           >
             <span class="min-w-0 truncate text-[11px] font-medium leading-none">{{ task.name }}</span>
             <span class="grid w-full grid-cols-2 gap-1.5">
               <span class="flex min-w-0 flex-col gap-1 rounded-md bg-slate-500/5 p-1.5">
                 <span class="flex min-w-0 items-center justify-between gap-1 text-[10px] leading-none">
-                  <span class="text-muted-foreground">延迟</span>
+                  <span class="text-muted-foreground">最近延迟</span>
                   <span class="truncate tabular-nums font-semibold" :class="task.status === 'loss' ? 'text-destructive' : task.status === 'no-data' ? 'text-muted-foreground' : 'text-success'">{{ task.display }}</span>
                 </span>
                 <span data-node-ping-metric="latency" class="grid h-2 min-w-0 w-full gap-[1px]" :style="{ gridTemplateColumns: `repeat(${task.latencyBars.length}, minmax(0, 1fr))` }">
@@ -466,7 +466,7 @@ function hasRegion(region: string | null | undefined): boolean {
               </span>
               <span class="flex min-w-0 flex-col gap-1 rounded-md bg-slate-500/5 p-1.5">
                 <span class="flex min-w-0 items-center justify-between gap-1 text-[10px] leading-none">
-                  <span class="text-muted-foreground">丢包</span>
+                  <span class="text-muted-foreground">1小时丢包</span>
                   <span class="truncate tabular-nums font-semibold" :class="task.lossDisplay === '—' ? 'text-muted-foreground' : 'text-warning'">{{ task.lossDisplay }}</span>
                 </span>
                 <span data-node-ping-metric="loss" class="grid h-2 min-w-0 w-full gap-[1px]" :style="{ gridTemplateColumns: `repeat(${task.lossBars.length}, minmax(0, 1fr))` }">
