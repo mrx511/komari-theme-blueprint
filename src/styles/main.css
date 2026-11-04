@@ -233,7 +233,7 @@ html.legacy-webkit.dark {
 
 /* 配色与浅色/深色模式独立；默认 blueprint 使用上面的原始设计令牌。 */
 html.palette-emerald {
-  --palette-paper: #f0f7f2;
+  --palette-paper: #ffffff;
   --palette-card: #ffffff;
   --palette-ink: #125239;
   --palette-secondary: #e2f0e7;
@@ -253,7 +253,7 @@ html.palette-emerald.dark {
 }
 
 html.palette-violet {
-  --palette-paper: #f5f1fa;
+  --palette-paper: #ffffff;
   --palette-card: #ffffff;
   --palette-ink: #4d3173;
   --palette-secondary: #ebe3f5;
@@ -273,8 +273,8 @@ html.palette-violet.dark {
 }
 
 html.palette-amber {
-  --palette-paper: #faf1e4;
-  --palette-card: #fffdf8;
+  --palette-paper: #ffffff;
+  --palette-card: #ffffff;
   --palette-ink: #683d0c;
   --palette-secondary: #f2e3cc;
   --palette-muted: #654b30;

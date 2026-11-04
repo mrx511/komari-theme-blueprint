@@ -246,6 +246,15 @@ onUnmounted(() => {
     );
 }
 
+/* 新增配色的浅色模式采用白色纸面，只用主题色绘制网格。 */
+:root:is(.palette-emerald, .palette-violet, .palette-amber):not(.dark) .default-background {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(var(--grid-ink) / 0.045) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(90deg, rgb(var(--grid-ink) / 0.045) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(0deg, rgb(var(--grid-ink) / 0.085) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(90deg, rgb(var(--grid-ink) / 0.085) 0 1px, transparent 1px 60px);
+}
+
 @media (max-width: 768px) {
   .default-background {
     background-position: 50% 78%;

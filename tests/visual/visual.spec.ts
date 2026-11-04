@@ -99,6 +99,16 @@ for (const [palette, lightInk, darkInk] of [
       expect(colors.foreground).toBe(dark ? darkInk : lightInk)
       expect(colors.globe).toBe(dark ? darkInk : lightInk)
       expect(colors.grid).not.toBe('29 78 137')
+      if (!dark) {
+        expect(colors.card).toBe('#fff')
+        const background = await page.locator('.default-background').evaluate((element) => {
+          const style = getComputedStyle(element)
+          return { color: style.backgroundColor, image: style.backgroundImage }
+        })
+        expect(background.color).toBe('rgb(255, 255, 255)')
+        expect(background.image).not.toContain('radial-gradient')
+        expect(background.image).toContain('repeating-linear-gradient')
+      }
       const contrastRatio = (left: string, right: string) => {
         const luminance = (hex: string) => {
           const expanded = hex.length === 4 ? `#${Array.from(hex.slice(1), digit => digit + digit).join('')}` : hex
@@ -124,6 +134,13 @@ test('nodes tool view renders card grid', async ({ page }) => {
   const card = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
   await expect(card).toBeVisible()
   await expect(page).toHaveScreenshot('nodes-card-desktop.png', { fullPage: false })
+})
+
+test('footer credits the fork and links to its repository', async ({ page }) => {
+  await installKomariFixture(page)
+  await openStablePage(page)
+  const credit = page.locator('footer a[href="https://github.com/mrx511/komari-theme-blueprint"]')
+  await expect(credit).toHaveText('Blueprint Plus')
 })
 
 test('mobile overview cards keep values and units together in two columns', async ({ page }) => {
