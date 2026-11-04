@@ -72,9 +72,9 @@ test('blueprint schedule renders grouped rows', async ({ page }) => {
 // ===== 节点卡片 / 列表视图（默认视图，无需切换） =====
 
 for (const [palette, lightInk, darkInk] of [
-  ['emerald', '#176345', '#e6fff2'],
-  ['violet', '#60438a', '#f4ebff'],
-  ['amber', '#87551a', '#fff3dc'],
+  ['emerald', '#125239', '#eafff3'],
+  ['violet', '#4d3173', '#f7efff'],
+  ['amber', '#683d0c', '#fff3df'],
 ] as const) {
   for (const dark of [false, true]) {
     test(`${palette} palette follows ${dark ? 'dark' : 'light'} mode`, async ({ page }) => {
@@ -88,6 +88,8 @@ for (const [palette, lightInk, darkInk] of [
           paletteClass: element.classList.contains(`palette-${currentPalette}`),
           darkClass: element.classList.contains('dark'),
           foreground: style.getPropertyValue('--foreground').trim(),
+          card: style.getPropertyValue('--card').trim(),
+          muted: style.getPropertyValue('--muted-foreground').trim(),
           globe: style.getPropertyValue('--globe-point').trim(),
           grid: style.getPropertyValue('--grid-ink').trim(),
         }
@@ -97,6 +99,18 @@ for (const [palette, lightInk, darkInk] of [
       expect(colors.foreground).toBe(dark ? darkInk : lightInk)
       expect(colors.globe).toBe(dark ? darkInk : lightInk)
       expect(colors.grid).not.toBe('29 78 137')
+      const contrastRatio = (left: string, right: string) => {
+        const luminance = (hex: string) => {
+          const expanded = hex.length === 4 ? `#${Array.from(hex.slice(1), digit => digit + digit).join('')}` : hex
+          const channels = expanded.slice(1).match(/.{2}/g)!.map(part => Number.parseInt(part, 16) / 255).map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4)
+          return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+        }
+        const a = luminance(left)
+        const b = luminance(right)
+        return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+      }
+      expect(contrastRatio(colors.foreground, colors.card)).toBeGreaterThanOrEqual(7)
+      expect(contrastRatio(colors.muted, colors.card)).toBeGreaterThanOrEqual(7)
     })
   }
 }

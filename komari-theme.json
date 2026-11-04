@@ -2,7 +2,7 @@
   "name": "blueprint",
   "short": "blueprint",
   "description": "A Blueprint theme for Komari with per-task Ping monitoring",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "author": "mrx511",
   "url": "https://github.com/mrx511/komari-theme-blueprint",
   "preview": "preview-blueprint.png",
