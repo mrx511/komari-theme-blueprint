@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NodeData } from '@/stores/nodes'
+import type { ExchangeRates, ExchangeRateSource } from '@/utils/financeHelper'
 import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +9,7 @@ import { DataTooltip } from '@/components/ui/data-tooltip'
 import { ProgressThin } from '@/components/ui/progress-thin'
 import { useNodePingDisplay } from '@/composables/useNodePingDisplay'
 import { useAppStore } from '@/stores/app'
+import { CURRENCY_SYMBOLS, normalizeCurrency } from '@/utils/financeHelper'
 import { formatBytesPerSecondWithConfig, formatBytesWithConfig, formatDateTime, getStatus, getUptimeDays } from '@/utils/helper'
 import { getDiskPercentage, getMemoryPercentage, getTrafficUsed, getTrafficUsedPercentage, hasTrafficLimit } from '@/utils/nodeMetricsHelper'
 import { getOSImage, getOSName } from '@/utils/osImageHelper'
@@ -18,6 +20,9 @@ const props = withDefaults(defineProps<{
   node: NodeData
   reduceMotion?: boolean
   pingEnabled?: boolean
+  exchangeRates?: ExchangeRates
+  exchangeRateSource?: ExchangeRateSource | 'loading'
+  exchangeRateUpdatedAt?: number | null
 }>(), {
   reduceMotion: false,
   pingEnabled: true,
@@ -43,6 +48,7 @@ function handleKeyboardOpen(event: KeyboardEvent) {
 interface RemainingInfoTag {
   icon: string
   text?: string
+  tooltip?: string
   prefix?: string
   value?: string
   unit?: string
@@ -166,10 +172,37 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
   }
 
   if (showPrice.value) {
-    const text = isFreePrice(node.price)
-      ? lang === 'zh-CN' ? '无' : 'N/A'
-      : formatCurrencyValue(getRemainingValue(node.price, node.billing_cycle, node.expired_at), node.currency)
-    items.push({ icon: 'tabler:coins', text })
+    if (isFreePrice(node.price)) {
+      items.push({ icon: 'tabler:coins', text: lang === 'zh-CN' ? '无' : 'N/A' })
+    }
+    else {
+      const amount = getRemainingValue(node.price, node.billing_cycle, node.expired_at)
+      const currency = normalizeCurrency(node.currency)
+      const originalText = formatCurrencyValue(amount, CURRENCY_SYMBOLS[currency])
+      const rate = props.exchangeRates?.[currency]
+      const hasOnlineRate = props.exchangeRateSource === 'network' || props.exchangeRateSource === 'cache'
+
+      if (currency !== 'CNY' && hasOnlineRate && rate && Number.isFinite(rate) && rate > 0) {
+        const convertedText = formatCurrencyValue(amount / rate, '¥')
+        const fetchedAt = props.exchangeRateUpdatedAt
+          ? new Date(props.exchangeRateUpdatedAt).toLocaleString(lang)
+          : lang === 'zh-CN' ? '时间未知' : 'time unknown'
+        items.push({
+          icon: 'tabler:coins',
+          text: `≈${convertedText}`,
+          tooltip: lang === 'zh-CN'
+            ? `原币 ${currency} ${originalText}；按每日更新的在线汇率估算\n汇率获取时间：${fetchedAt}；非即时成交价`
+            : `Original ${currency} ${originalText}; estimated with the latest daily online rate\nRate fetched: ${fetchedAt}; not a live trading quote`,
+        })
+      }
+      else {
+        items.push({
+          icon: 'tabler:coins',
+          text: originalText,
+          tooltip: currency === 'CNY' ? undefined : lang === 'zh-CN' ? '在线汇率暂不可用，显示原币金额' : 'Online rate unavailable; showing the original currency',
+        })
+      }
+    }
   }
   return items
 })
@@ -422,7 +455,7 @@ function hasRegion(region: string | null | undefined): boolean {
                 :class="item.className ?? 'text-muted-foreground'"
               >
                 <Icon :icon="item.icon" width="11" height="11" class="shrink-0" />
-                <span v-if="item.text" class="truncate min-w-0 overflow-hidden">{{ item.text }}</span>
+                <span v-if="item.text" class="truncate min-w-0 overflow-hidden" :title="item.tooltip">{{ item.text }}</span>
                 <template v-else>
                   <span v-if="item.prefix" class="shrink-0">{{ item.prefix }}</span>
                   <span v-if="item.value" class="shrink-0 tabular-nums">{{ item.value }}</span>

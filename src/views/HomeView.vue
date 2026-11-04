@@ -88,6 +88,9 @@ function resetHomeFilters() {
   activeQuickControl.value = null
 }
 const exchangeRates = ref(financeHelper.DEFAULT_EXCHANGE_RATES)
+const exchangeRateSource = ref<financeHelper.ExchangeRateSource | 'loading'>('loading')
+const exchangeRateUpdatedAt = ref<number | null>(null)
+const exchangeRateDate = ref('')
 const excludeFreeNodes = ref(true)
 const pingDialogNode = ref<NodeData | null>(null)
 
@@ -154,10 +157,26 @@ watch(
   { immediate: true },
 )
 
-onMounted(async () => {
-  excludeFreeNodes.value = financeHelper.shouldExcludeFreeNodes()
-  const { rates } = await financeHelper.getDailyExchangeRates()
+async function refreshExchangeRates() {
+  const today = financeHelper.getTodayDateKey()
+  if (exchangeRateDate.value === today)
+    return
+
+  const { rates, source, updatedAt } = await financeHelper.getDailyExchangeRates()
   exchangeRates.value = rates
+  exchangeRateSource.value = source
+  exchangeRateUpdatedAt.value = updatedAt
+  if (source === 'network' || source === 'cache')
+    exchangeRateDate.value = today
+}
+
+onMounted(() => {
+  excludeFreeNodes.value = financeHelper.shouldExcludeFreeNodes()
+  void refreshExchangeRates()
+})
+
+onActivated(() => {
+  void refreshExchangeRates()
 })
 
 watch(
@@ -556,6 +575,9 @@ const nodeCardGridClass = computed(() => {
                     :node="node"
                     :reduce-motion="reduceDenseNodeEffects"
                     :ping-enabled="isViewActive"
+                    :exchange-rates="exchangeRates"
+                    :exchange-rate-source="exchangeRateSource"
+                    :exchange-rate-updated-at="exchangeRateUpdatedAt"
                     @click="handleNodeClick(node)"
                     @ping-click="openPingDialog(node)"
                   />
@@ -582,6 +604,11 @@ const nodeCardGridClass = computed(() => {
             </div>
           </TabsContent>
         </Tabs>
+        <p v-if="exchangeRateSource === 'network' || exchangeRateSource === 'cache'" class="mt-3 text-center text-[11px] text-muted-foreground">
+          节点剩余价值按每日更新的在线汇率估算 ·
+          <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" class="underline-offset-2 hover:underline">Rates By Exchange Rate API</a>
+          / <a href="https://frankfurter.dev/" target="_blank" rel="noopener noreferrer" class="underline-offset-2 hover:underline">Frankfurter</a>
+        </p>
       </div>
     </div>
     <PingMonitorDialog

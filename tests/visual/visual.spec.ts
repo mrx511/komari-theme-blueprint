@@ -114,7 +114,12 @@ test('mobile overview cards keep values and units together in two columns', asyn
       return Number.parseFloat(style.fontSize) >= 14 && element.scrollWidth <= element.clientWidth + 1
     })).toBe(true)
   }
-  expect(await page.locator('[data-general-card-key="netSpeed"] [data-general-card-mobile-detail]').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(15)
+  const mobileTypography = async (cardKey: string, selector: string) => page.locator(`[data-general-card-key="${cardKey}"] ${selector}`).evaluate((element) => {
+    const style = getComputedStyle(element)
+    return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color }
+  })
+  expect(await mobileTypography('netSpeed', '[data-general-card-mobile-detail]')).toEqual(await mobileTypography('netSpeed', '[data-general-card-mobile-value]'))
+  expect(await mobileTypography('disk', '[data-general-card-mobile-value]')).toEqual(await mobileTypography('memory', '[data-general-card-mobile-value]'))
 
   await page.setViewportSize({ width: 320, height: 700 })
   for (const card of await cards.all()) {
@@ -128,6 +133,24 @@ test('mobile overview cards keep values and units together in two columns', asyn
   const pingTask = page.locator('[data-node-ping-task-id]').first()
   await expect(pingTask).toContainText('最近延迟')
   await expect(pingTask).toContainText('1小时丢包')
+})
+
+test('foreign-currency remaining value uses the latest online rate in CNY', async ({ page }) => {
+  await page.route('https://open.er-api.com/v6/latest/CNY', route => route.fulfill({
+    json: {
+      result: 'success',
+      rates: { CNY: 1, USD: 0.14, HKD: 1.1, EUR: 0.12, GBP: 0.1, JPY: 22, RUB: 13, CHF: 0.12, INR: 11, VND: 3500, THB: 5, CAD: 0.19 },
+    },
+    headers: { 'access-control-allow-origin': '*' },
+  }))
+  await installKomariFixture(page)
+  await openStablePage(page)
+
+  const card = page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' })
+  const convertedValue = card.locator('span[title*="原币"]')
+  await expect(convertedValue).toHaveText(/^≈¥/)
+  await expect(convertedValue).toHaveAttribute('title', /原币 USD \$/)
+  await expect(convertedValue).toHaveAttribute('title', /每日更新的在线汇率/)
 })
 
 test('nodes tool view mini card icons remain accessible', async ({ page }) => {

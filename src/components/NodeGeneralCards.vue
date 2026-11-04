@@ -889,7 +889,7 @@ onMounted(async () => {
                   <span data-general-card-mobile-value class="block min-w-0 whitespace-nowrap text-[clamp(17px,5vw,19px)] font-bold leading-tight tracking-tight tabular-nums">
                     {{ card.mobileValue ?? `${card.value}${card.unit ? ` ${card.unit}` : ''}` }}
                   </span>
-                  <span v-if="card.mobileDetail" data-general-card-mobile-detail class="block min-w-0 whitespace-nowrap leading-tight text-foreground/80 tabular-nums" :class="card.key === 'netSpeed' ? 'text-[clamp(15px,4.3vw,17px)] font-semibold' : 'text-sm font-medium'">
+                  <span v-if="card.mobileDetail" data-general-card-mobile-detail class="block min-w-0 whitespace-nowrap leading-tight tabular-nums" :class="card.key === 'netSpeed' ? 'text-[clamp(17px,5vw,19px)] font-bold tracking-tight text-foreground' : 'text-sm font-medium text-foreground/80'">
                     {{ card.mobileDetail }}
                   </span>
                 </div>
