@@ -118,7 +118,8 @@ test('mobile overview cards keep values and units together in two columns', asyn
     const style = getComputedStyle(element)
     return { fontSize: style.fontSize, fontWeight: style.fontWeight, color: style.color }
   })
-  expect(await mobileTypography('netSpeed', '[data-general-card-mobile-detail]')).toEqual(await mobileTypography('netSpeed', '[data-general-card-mobile-value]'))
+  for (const key of ['netSpeed', 'memory', 'disk'])
+    expect(await mobileTypography(key, '[data-general-card-mobile-detail]')).toEqual(await mobileTypography(key, '[data-general-card-mobile-value]'))
   expect(await mobileTypography('disk', '[data-general-card-mobile-value]')).toEqual(await mobileTypography('memory', '[data-general-card-mobile-value]'))
 
   await page.setViewportSize({ width: 320, height: 700 })
@@ -128,6 +129,15 @@ test('mobile overview cards keep values and units together in two columns', asyn
     const detail = card.locator('[data-general-card-mobile-detail]')
     if (await detail.count())
       expect(await detail.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+  }
+
+  await page.setViewportSize({ width: 854, height: 700 })
+  for (const key of ['netSpeed', 'memory', 'disk']) {
+    expect(await mobileTypography(key, '[data-general-card-mobile-detail]')).toEqual(await mobileTypography(key, '[data-general-card-mobile-value]'))
+    for (const line of await page.locator(`[data-general-card-key="${key}"] [data-general-card-mobile-value], [data-general-card-key="${key}"] [data-general-card-mobile-detail]`).all()) {
+      await expect(line).toBeVisible()
+      expect(await line.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+    }
   }
 
   const pingTask = page.locator('[data-node-ping-task-id]').first()
@@ -151,6 +161,14 @@ test('foreign-currency remaining value uses the latest online rate in CNY', asyn
   await expect(convertedValue).toHaveText(/^≈¥/)
   await expect(convertedValue).toHaveAttribute('title', /原币 USD \$/)
   await expect(convertedValue).toHaveAttribute('title', /每日更新的在线汇率/)
+})
+
+test('free and unset-price nodes show distinct remaining-value labels', async ({ page }) => {
+  await installKomariFixture(page, { freePriceNode: true })
+  await openStablePage(page)
+
+  await expect(page.getByRole('button', { name: '查看节点 主控-洛杉矶 详情' }).getByText('免费', { exact: true }).last()).toBeVisible()
+  await expect(page.getByRole('button', { name: '查看节点 伦敦-离线归档 详情' }).getByText('无', { exact: true })).toBeVisible()
 })
 
 test('nodes tool view mini card icons remain accessible', async ({ page }) => {

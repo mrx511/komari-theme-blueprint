@@ -145,8 +145,6 @@ const priceText = computed(() => {
 // 第三列：剩余天数（始终） + 剩余价值（仅在允许显示金额时），带图标与相邻列对齐
 const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
   const node = props.node
-  if (node.price === 0)
-    return []
   const lang = appStore.lang
   const days = getDaysUntilExpired(node.expired_at)
   const status = getExpireStatus(node.expired_at)
@@ -173,6 +171,9 @@ const remainingInfoTags = computed<RemainingInfoTag[]>(() => {
 
   if (showPrice.value) {
     if (isFreePrice(node.price)) {
+      items.push({ icon: 'tabler:coins', text: lang === 'zh-CN' ? '免费' : 'Free' })
+    }
+    else if (node.price === 0) {
       items.push({ icon: 'tabler:coins', text: lang === 'zh-CN' ? '无' : 'N/A' })
     }
     else {

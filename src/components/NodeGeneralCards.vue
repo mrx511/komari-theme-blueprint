@@ -37,6 +37,7 @@ interface GeneralMetricCard {
   unit?: string
   mobileValue?: string
   mobileDetail?: string
+  pairedValues?: { primary: string, secondary: string }
   tooltip?: string
   action?: 'financeDetails'
 }
@@ -446,6 +447,10 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         unit: `${formattedMemoryUsed.value.unit} / ${formattedMemoryTotal.value.value} ${formattedMemoryTotal.value.unit}`,
         mobileValue: `${formattedMemoryUsed.value.value} ${formattedMemoryUsed.value.unit}`,
         mobileDetail: `总量 ${formattedMemoryTotal.value.value} ${formattedMemoryTotal.value.unit}`,
+        pairedValues: {
+          primary: `已用 ${formattedMemoryUsed.value.value} ${formattedMemoryUsed.value.unit}`,
+          secondary: `总量 ${formattedMemoryTotal.value.value} ${formattedMemoryTotal.value.unit}`,
+        },
       }
     case 'disk':
       return {
@@ -456,6 +461,10 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         unit: `${formattedDiskUsed.value.unit} / ${formattedDiskTotal.value.value} ${formattedDiskTotal.value.unit}`,
         mobileValue: `${formattedDiskUsed.value.value} ${formattedDiskUsed.value.unit}`,
         mobileDetail: `总量 ${formattedDiskTotal.value.value} ${formattedDiskTotal.value.unit}`,
+        pairedValues: {
+          primary: `已用 ${formattedDiskUsed.value.value} ${formattedDiskUsed.value.unit}`,
+          secondary: `总量 ${formattedDiskTotal.value.value} ${formattedDiskTotal.value.unit}`,
+        },
       }
     case 'remainingValue':
       return {
@@ -485,6 +494,10 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         unit: `${formattedSpeedUp.value.unit} · ↓${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
         mobileValue: `↑ ${formattedSpeedUp.value.value} ${formattedSpeedUp.value.unit}`,
         mobileDetail: `↓ ${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
+        pairedValues: {
+          primary: `↑ ${formattedSpeedUp.value.value} ${formattedSpeedUp.value.unit}`,
+          secondary: `↓ ${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
+        },
         tooltip: `上行 ${formattedSpeedUp.value.value} ${formattedSpeedUp.value.unit} · 下行 ${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
       }
     case 'systemLoad':
@@ -856,7 +869,7 @@ onMounted(async () => {
         :key="card.key"
         :data-general-card-key="card.key"
         hoverable
-        :class="[cardClass, getCardPositionClass(index), card.action && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring']"
+        class="@container" :class="[cardClass, getCardPositionClass(index), card.action && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring']"
         content-class="h-full !p-3"
         :role="card.action ? 'button' : undefined"
         :tabindex="card.action ? 0 : undefined"
@@ -885,7 +898,15 @@ onMounted(async () => {
                 class="min-w-0"
                 :style="getMetricSwitchStyle(index)"
               >
-                <div class="flex min-w-0 flex-col gap-1 md:hidden">
+                <div v-if="card.pairedValues" class="flex min-w-0 flex-col gap-1">
+                  <span data-general-card-mobile-value class="block min-w-0 whitespace-nowrap text-[clamp(16px,4.4vw,18px)] md:text-[clamp(12px,7.2cqi,18px)] font-bold leading-tight tracking-tight tabular-nums text-foreground">
+                    {{ card.pairedValues.primary }}
+                  </span>
+                  <span data-general-card-mobile-detail class="block min-w-0 whitespace-nowrap text-[clamp(16px,4.4vw,18px)] md:text-[clamp(12px,7.2cqi,18px)] font-bold leading-tight tracking-tight tabular-nums text-foreground">
+                    {{ card.pairedValues.secondary }}
+                  </span>
+                </div>
+                <div v-else class="flex min-w-0 flex-col gap-1 md:hidden">
                   <span data-general-card-mobile-value class="block min-w-0 whitespace-nowrap text-[clamp(17px,5vw,19px)] font-bold leading-tight tracking-tight tabular-nums">
                     {{ card.mobileValue ?? `${card.value}${card.unit ? ` ${card.unit}` : ''}` }}
                   </span>
@@ -893,7 +914,7 @@ onMounted(async () => {
                     {{ card.mobileDetail }}
                   </span>
                 </div>
-                <div class="hidden min-w-0 items-baseline gap-1 md:flex">
+                <div v-if="!card.pairedValues" class="hidden min-w-0 items-baseline gap-1 md:flex">
                   <span data-general-card-value class="min-w-0 max-w-full truncate text-2xl font-bold leading-none tracking-tight tabular-nums">
                     {{ card.value }}
                   </span>
