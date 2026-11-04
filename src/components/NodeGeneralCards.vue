@@ -35,6 +35,8 @@ interface GeneralMetricCard {
   icon: string
   value: string
   unit?: string
+  mobileValue?: string
+  mobileDetail?: string
   tooltip?: string
   action?: 'financeDetails'
 }
@@ -442,6 +444,8 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         icon: 'icon-park-outline:memory',
         value: formattedMemoryUsed.value.value,
         unit: `${formattedMemoryUsed.value.unit} / ${formattedMemoryTotal.value.value} ${formattedMemoryTotal.value.unit}`,
+        mobileValue: `${formattedMemoryUsed.value.value} ${formattedMemoryUsed.value.unit}`,
+        mobileDetail: `总量 ${formattedMemoryTotal.value.value} ${formattedMemoryTotal.value.unit}`,
       }
     case 'disk':
       return {
@@ -450,6 +454,8 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         icon: 'tabler:server-2',
         value: formattedDiskUsed.value.value,
         unit: `${formattedDiskUsed.value.unit} / ${formattedDiskTotal.value.value} ${formattedDiskTotal.value.unit}`,
+        mobileValue: `${formattedDiskUsed.value.value} ${formattedDiskUsed.value.unit}`,
+        mobileDetail: `总量 ${formattedDiskTotal.value.value} ${formattedDiskTotal.value.unit}`,
       }
     case 'remainingValue':
       return {
@@ -467,6 +473,7 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         icon: 'tabler:download',
         value: totalTrafficTooltip.value.value,
         unit: totalTrafficTooltip.value.unit,
+        mobileValue: `${totalTrafficTooltip.value.value} ${totalTrafficTooltip.value.unit}`,
         tooltip: `↑ ${formattedTrafficUp.value.value} ${formattedTrafficUp.value.unit}\n↓ ${formattedTrafficDown.value.value} ${formattedTrafficDown.value.unit}`,
       }
     case 'netSpeed':
@@ -475,7 +482,9 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         label: '实时速率',
         icon: 'tabler:arrows-exchange',
         value: `↑${formattedSpeedUp.value.value}`,
-        unit: `KB/s · ↓${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
+        unit: `${formattedSpeedUp.value.unit} · ↓${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
+        mobileValue: `↑ ${formattedSpeedUp.value.value} ${formattedSpeedUp.value.unit}`,
+        mobileDetail: `↓ ${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
         tooltip: `上行 ${formattedSpeedUp.value.value} ${formattedSpeedUp.value.unit} · 下行 ${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
       }
     case 'systemLoad':
@@ -510,6 +519,8 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         icon: 'tabler:activity-heartbeat',
         value: formatCount(onlineNodeCount.value),
         unit: `/ ${formatCount(totalNodeCount.value)} · 离线 ${formatCount(globeOfflineCount.value)}`,
+        mobileValue: `${formatCount(onlineNodeCount.value)} / ${formatCount(totalNodeCount.value)}`,
+        mobileDetail: `离线 ${formatCount(globeOfflineCount.value)}`,
       }
     case 'avgCpu':
       return {
@@ -770,7 +781,7 @@ const tiledCardPositionClasses = [
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-7 row-start-4 sm:row-start-2',
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-10 row-start-4 sm:row-start-2',
 ]
-const unitClass = 'min-w-0 text-[11px] md:text-xs font-medium text-muted-foreground whitespace-normal break-words md:truncate'
+const unitClass = 'min-w-0 text-xs font-medium text-muted-foreground truncate'
 
 function getCardPositionClass(index: number): string {
   if (!showEarth.value)
@@ -853,12 +864,12 @@ onMounted(async () => {
         @click="activateCard(card)"
         @keydown="handleCardKeydown($event, card)"
       >
-        <div class="flex h-full flex-col justify-between gap-1">
+        <div class="flex h-full flex-col justify-between gap-2">
           <div class="flex items-start justify-between gap-2">
-            <span class="text-xs font-medium tracking-wider text-muted-foreground truncate">{{ card.label }}</span>
+            <span class="text-[13px] md:text-xs font-semibold md:font-medium tracking-wide text-muted-foreground truncate">{{ card.label }}</span>
             <Icon
-              :icon="card.icon" :width="20" :height="20"
-              class="shrink-0 text-muted-foreground/20 group-hover:text-muted-foreground transition-colors"
+              :icon="card.icon" :width="18" :height="18"
+              class="shrink-0 text-muted-foreground/35 group-hover:text-muted-foreground transition-colors"
             />
           </div>
           <DataTooltip
@@ -871,15 +882,25 @@ onMounted(async () => {
             <Transition v-bind="metricSwitchTransitionProps">
               <div
                 :key="`${card.key}-${summaryTransitionKey}`"
-                class="flex min-w-0 flex-col items-start gap-0.5 md:flex-row md:items-baseline md:gap-1"
+                class="min-w-0"
                 :style="getMetricSwitchStyle(index)"
               >
-                <span data-general-card-value class="min-w-0 max-w-full break-all text-sm md:text-2xl font-bold leading-none tracking-tight md:truncate">
-                  {{ card.value }}
-                </span>
-                <span v-if="card.unit" data-general-card-unit :class="unitClass">
-                  {{ card.unit }}
-                </span>
+                <div class="flex min-w-0 flex-col gap-0.5 md:hidden">
+                  <span data-general-card-mobile-value class="block min-w-0 whitespace-nowrap text-[clamp(14px,4.3vw,17px)] font-bold leading-tight tracking-tight tabular-nums">
+                    {{ card.mobileValue ?? `${card.value}${card.unit ? ` ${card.unit}` : ''}` }}
+                  </span>
+                  <span v-if="card.mobileDetail" data-general-card-mobile-detail class="block min-w-0 whitespace-nowrap text-[11px] leading-tight text-muted-foreground tabular-nums">
+                    {{ card.mobileDetail }}
+                  </span>
+                </div>
+                <div class="hidden min-w-0 items-baseline gap-1 md:flex">
+                  <span data-general-card-value class="min-w-0 max-w-full truncate text-2xl font-bold leading-none tracking-tight tabular-nums">
+                    {{ card.value }}
+                  </span>
+                  <span v-if="card.unit" data-general-card-unit :class="unitClass">
+                    {{ card.unit }}
+                  </span>
+                </div>
               </div>
             </Transition>
           </DataTooltip>

@@ -82,7 +82,7 @@ test('nodes tool view renders card grid', async ({ page }) => {
   await expect(page).toHaveScreenshot('nodes-card-desktop.png', { fullPage: false })
 })
 
-test('mobile overview cards show complete values in two columns', async ({ page }) => {
+test('mobile overview cards keep values and units together in two columns', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await installKomariFixture(page)
   await openStablePage(page)
@@ -97,12 +97,21 @@ test('mobile overview cards show complete values in two columns', async ({ page 
   expect(third!.y).toBeGreaterThan(first!.y + first!.height - 2)
 
   for (const card of await cards.all()) {
-    for (const value of await card.locator('[data-general-card-value], [data-general-card-unit]').all()) {
-      expect(await value.evaluate((element) => {
-        const style = getComputedStyle(element)
-        return style.textOverflow !== 'ellipsis' && element.scrollWidth <= element.clientWidth + 1
-      })).toBe(true)
-    }
+    const value = card.locator('[data-general-card-mobile-value]')
+    await expect(value).toBeVisible()
+    expect(await value.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+  }
+
+  await expect(page.locator('[data-general-card-key="memory"] [data-general-card-mobile-value]')).toContainText('GB')
+  await expect(page.locator('[data-general-card-key="disk"] [data-general-card-mobile-detail]')).toContainText('总量')
+  await expect(page.locator('[data-general-card-key="netSpeed"] [data-general-card-mobile-value]')).toContainText('↑')
+  await expect(page.locator('[data-general-card-key="netSpeed"] [data-general-card-mobile-detail]')).toContainText('↓')
+  await expect(page.locator('[data-general-card-key="onlineNodes"] [data-general-card-mobile-detail]')).toContainText('离线')
+
+  await page.setViewportSize({ width: 320, height: 700 })
+  for (const card of await cards.all()) {
+    const value = card.locator('[data-general-card-mobile-value]')
+    expect(await value.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
   }
 
   const pingTask = page.locator('[data-node-ping-task-id]').first()
