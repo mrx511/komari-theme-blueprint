@@ -756,11 +756,11 @@ const cardGridClass = computed(() => {
     return 'col-span-1 grid grid-cols-2 md:grid-cols-6 gap-2'
 
   if (isTiledEarth.value)
-    return 'col-span-12 row-start-1 z-9 grid grid-cols-12 auto-rows-[4.75rem] sm:auto-rows-[5rem] md:auto-rows-[5.8rem] gap-2 sm:gap-3'
+    return 'col-span-12 row-start-1 z-9 grid grid-cols-12 auto-rows-[6.25rem] sm:auto-rows-[5rem] md:auto-rows-[5.8rem] gap-2 sm:gap-3'
 
   return hasExtraCards.value
-    ? 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:h-auto md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5.75rem] md:auto-rows-[7rem] gap-2'
-    : 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5.75rem] md:auto-rows-[7rem] gap-2'
+    ? 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:h-auto md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[6.25rem] md:auto-rows-[7rem] gap-2'
+    : 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[6.25rem] md:auto-rows-[7rem] gap-2'
 })
 const cardClass = 'group relative z-10 h-full min-w-0 bg-card/75 backdrop-blur-sm md:bg-card md:backdrop-blur-none border-border hover:bg-secondary transition-all'
 const cardPositionClasses = [
@@ -785,7 +785,7 @@ const unitClass = 'min-w-0 text-xs font-medium text-muted-foreground truncate'
 
 function getCardPositionClass(index: number): string {
   if (!showEarth.value)
-    return 'col-span-1 min-h-18 md:min-h-28'
+    return 'col-span-1 min-h-24 md:min-h-28'
 
   if (isTiledEarth.value)
     return tiledCardPositionClasses[index] ?? 'col-span-6 sm:col-span-3 row-span-1'
@@ -866,7 +866,7 @@ onMounted(async () => {
       >
         <div class="flex h-full flex-col justify-between gap-2">
           <div class="flex items-start justify-between gap-2">
-            <span class="text-[13px] md:text-xs font-semibold md:font-medium tracking-wide text-muted-foreground truncate">{{ card.label }}</span>
+            <span class="text-sm md:text-xs font-semibold md:font-medium tracking-wide text-muted-foreground truncate">{{ card.label }}</span>
             <Icon
               :icon="card.icon" :width="18" :height="18"
               class="shrink-0 text-muted-foreground/35 group-hover:text-muted-foreground transition-colors"
@@ -885,11 +885,11 @@ onMounted(async () => {
                 class="min-w-0"
                 :style="getMetricSwitchStyle(index)"
               >
-                <div class="flex min-w-0 flex-col gap-0.5 md:hidden">
-                  <span data-general-card-mobile-value class="block min-w-0 whitespace-nowrap text-[clamp(14px,4.3vw,17px)] font-bold leading-tight tracking-tight tabular-nums">
+                <div class="flex min-w-0 flex-col gap-1 md:hidden">
+                  <span data-general-card-mobile-value class="block min-w-0 whitespace-nowrap text-[clamp(17px,5vw,19px)] font-bold leading-tight tracking-tight tabular-nums">
                     {{ card.mobileValue ?? `${card.value}${card.unit ? ` ${card.unit}` : ''}` }}
                   </span>
-                  <span v-if="card.mobileDetail" data-general-card-mobile-detail class="block min-w-0 whitespace-nowrap text-[11px] leading-tight text-muted-foreground tabular-nums">
+                  <span v-if="card.mobileDetail" data-general-card-mobile-detail class="block min-w-0 whitespace-nowrap leading-tight text-foreground/80 tabular-nums" :class="card.key === 'netSpeed' ? 'text-[clamp(15px,4.3vw,17px)] font-semibold' : 'text-sm font-medium'">
                     {{ card.mobileDetail }}
                   </span>
                 </div>

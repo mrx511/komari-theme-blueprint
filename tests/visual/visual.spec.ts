@@ -108,10 +108,21 @@ test('mobile overview cards keep values and units together in two columns', asyn
   await expect(page.locator('[data-general-card-key="netSpeed"] [data-general-card-mobile-detail]')).toContainText('↓')
   await expect(page.locator('[data-general-card-key="onlineNodes"] [data-general-card-mobile-detail]')).toContainText('离线')
 
+  for (const detail of await page.locator('[data-general-card-mobile-detail]').all()) {
+    expect(await detail.evaluate((element) => {
+      const style = getComputedStyle(element)
+      return Number.parseFloat(style.fontSize) >= 14 && element.scrollWidth <= element.clientWidth + 1
+    })).toBe(true)
+  }
+  expect(await page.locator('[data-general-card-key="netSpeed"] [data-general-card-mobile-detail]').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(15)
+
   await page.setViewportSize({ width: 320, height: 700 })
   for (const card of await cards.all()) {
     const value = card.locator('[data-general-card-mobile-value]')
     expect(await value.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+    const detail = card.locator('[data-general-card-mobile-detail]')
+    if (await detail.count())
+      expect(await detail.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
   }
 
   const pingTask = page.locator('[data-node-ping-task-id]').first()
