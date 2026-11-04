@@ -110,6 +110,52 @@ test('mobile overview cards show complete values in two columns', async ({ page 
   await expect(pingTask).toContainText('1小时丢包')
 })
 
+for (const layout of [
+  { width: 320 },
+  { width: 390 },
+  { width: 768 },
+  { width: 1280 },
+  { width: 390, dark: true },
+  { width: 390, hideEarth: true },
+  { width: 390, earthRenderer: 'tiled' as const },
+]) {
+  test(`overview metric alignment ${JSON.stringify(layout)}`, async ({ page }) => {
+    await page.setViewportSize({ width: layout.width, height: 900 })
+    await installKomariFixture(page, {
+      ...layout,
+      generalCardKeys: ['memory', 'disk', 'netSpeed', 'remainingValue', 'totalTraffic', 'onlineNodes'],
+    })
+    await openStablePage(page)
+    const cards = page.locator('[data-general-card-key]')
+    await expect(cards).toHaveCount(6)
+
+    const offsets: number[] = []
+    for (const card of await cards.all()) {
+      const box = await card.boundingBox()
+      const value = await card.locator('[data-general-card-value]').boundingBox()
+      expect(box && value).toBeTruthy()
+      offsets.push(value!.y - box!.y)
+      for (const metric of await card.locator('[data-general-card-value], [data-general-card-unit], [data-general-card-secondary]').all()) {
+        expect(await metric.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+        const metricBox = await metric.boundingBox()
+        expect(metricBox!.y + metricBox!.height).toBeLessThanOrEqual(box!.y + box!.height)
+      }
+    }
+    expect(Math.max(...offsets) - Math.min(...offsets)).toBeLessThan(2)
+
+    const speed = page.locator('[data-general-card-key="netSpeed"]')
+    // Fixture totals exceed 1 MB/s; KB/s would mislabel the actual value.
+    await expect(speed.locator('[data-general-card-unit]')).toHaveText('MB/s')
+    await expect(speed.locator('[data-general-card-secondary]')).toContainText('MB/s')
+    await expect(speed.locator('[data-general-card-secondary]')).toContainText('↓')
+
+    await cards.first().locator('..').screenshot({
+      path: test.info().outputPath('overview.png'),
+      animations: 'disabled',
+    })
+  })
+}
+
 test('nodes tool view mini card icons remain accessible', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await installKomariFixture(page, { nodeCardSize: 'mini' })

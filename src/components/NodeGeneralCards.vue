@@ -35,6 +35,8 @@ interface GeneralMetricCard {
   icon: string
   value: string
   unit?: string
+  secondaryValue?: string
+  secondaryUnit?: string
   tooltip?: string
   action?: 'financeDetails'
 }
@@ -475,7 +477,9 @@ function getCardDefinition(key: GeneralCardKey): GeneralMetricCard {
         label: '实时速率',
         icon: 'tabler:arrows-exchange',
         value: `↑${formattedSpeedUp.value.value}`,
-        unit: `KB/s · ↓${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
+        unit: formattedSpeedUp.value.unit,
+        secondaryValue: `↓${formattedSpeedDown.value.value}`,
+        secondaryUnit: formattedSpeedDown.value.unit,
         tooltip: `上行 ${formattedSpeedUp.value.value} ${formattedSpeedUp.value.unit} · 下行 ${formattedSpeedDown.value.value} ${formattedSpeedDown.value.unit}`,
       }
     case 'systemLoad':
@@ -731,34 +735,34 @@ const wrapperClass = computed(() => {
     return 'p-3 sm:p-4 grid grid-cols-12 gap-2 sm:gap-3 h-auto min-h-[40rem] sm:min-h-[30rem] md:min-h-[36rem] lg:min-h-[40rem]'
 
   return hasExtraCards.value
-    ? 'p-4 grid grid-cols-12 gap-2 h-auto md:min-h-66'
-    : 'p-4 grid grid-cols-12 grid-rows-1 gap-2 h-auto md:h-66'
+    ? 'p-4 grid grid-cols-12 gap-2 h-auto lg:min-h-66'
+    : 'p-4 grid grid-cols-12 grid-rows-1 gap-2 h-auto lg:h-66'
 })
 const earthClass = computed(() => {
   if (isTiledEarth.value)
     return 'col-span-12 row-start-2 min-h-[18rem] h-[18rem] sm:h-[20rem] md:h-[24rem] lg:h-[28rem]'
 
-  return 'col-span-12 col-start-1 md:col-span-6 md:col-start-7 md:row-start-1'
+  return 'col-span-12 col-start-1 lg:col-span-6 lg:col-start-7 lg:row-start-1'
 })
 const cardGridClass = computed(() => {
   if (!showEarth.value)
-    return 'col-span-1 grid grid-cols-2 md:grid-cols-6 gap-2'
+    return 'col-span-1 grid grid-cols-2 lg:grid-cols-6 gap-2'
 
   if (isTiledEarth.value)
-    return 'col-span-12 row-start-1 z-9 grid grid-cols-12 auto-rows-[4.75rem] sm:auto-rows-[5rem] md:auto-rows-[5.8rem] gap-2 sm:gap-3'
+    return 'col-span-12 row-start-1 z-9 grid grid-cols-12 auto-rows-[minmax(6.5rem,auto)] lg:auto-rows-[7rem] gap-2 sm:gap-3'
 
   return hasExtraCards.value
-    ? 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:h-auto md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5.75rem] md:auto-rows-[7rem] gap-2'
-    : 'h-auto mt-0 md:mt-0 col-span-12 row-start-3 z-9 md:col-span-6 md:row-start-1 grid grid-cols-12 auto-rows-[5.75rem] md:auto-rows-[7rem] gap-2'
+    ? 'h-auto mt-0 lg:mt-0 col-span-12 row-start-3 z-9 lg:h-auto lg:col-span-6 lg:row-start-1 grid grid-cols-12 auto-rows-[minmax(6.5rem,auto)] lg:auto-rows-[7rem] gap-2'
+    : 'h-auto mt-0 lg:mt-0 col-span-12 row-start-3 z-9 lg:col-span-6 lg:row-start-1 grid grid-cols-12 auto-rows-[minmax(6.5rem,auto)] lg:auto-rows-[7rem] gap-2'
 })
-const cardClass = 'group relative z-10 h-full min-w-0 bg-card/75 backdrop-blur-sm md:bg-card md:backdrop-blur-none border-border hover:bg-secondary transition-all'
+const cardClass = 'group relative z-10 h-full min-w-0 bg-card/75 backdrop-blur-sm lg:bg-card lg:backdrop-blur-none border-border hover:bg-secondary transition-all'
 const cardPositionClasses = [
-  'col-span-6 md:col-span-4 md:col-start-1 md:row-start-1',
-  'col-span-6 md:col-span-4 md:col-start-1 md:row-start-2',
-  'col-span-6 md:col-span-4 md:col-start-5 md:row-start-1',
-  'col-span-6 md:col-span-4 md:col-start-5 md:row-start-2',
-  'col-span-6 md:col-span-4 md:col-start-9 md:row-start-1',
-  'col-span-6 md:col-span-4 md:col-start-9 md:row-start-2',
+  'col-span-6 lg:col-span-4 lg:col-start-1 lg:row-start-1',
+  'col-span-6 lg:col-span-4 lg:col-start-1 lg:row-start-2',
+  'col-span-6 lg:col-span-4 lg:col-start-5 lg:row-start-1',
+  'col-span-6 lg:col-span-4 lg:col-start-5 lg:row-start-2',
+  'col-span-6 lg:col-span-4 lg:col-start-9 lg:row-start-1',
+  'col-span-6 lg:col-span-4 lg:col-start-9 lg:row-start-2',
 ]
 const tiledCardPositionClasses = [
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-1 row-start-1',
@@ -770,16 +774,16 @@ const tiledCardPositionClasses = [
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-7 row-start-4 sm:row-start-2',
   'col-span-6 sm:col-span-3 row-span-1 sm:col-start-10 row-start-4 sm:row-start-2',
 ]
-const unitClass = 'min-w-0 text-[11px] md:text-xs font-medium text-muted-foreground whitespace-normal break-words md:truncate'
+const unitClass = 'min-w-0 text-[11px] lg:text-xs leading-4 font-medium text-muted-foreground whitespace-normal break-words lg:truncate'
 
 function getCardPositionClass(index: number): string {
   if (!showEarth.value)
-    return 'col-span-1 min-h-18 md:min-h-28'
+    return 'col-span-1 min-h-26 lg:min-h-28'
 
   if (isTiledEarth.value)
     return tiledCardPositionClasses[index] ?? 'col-span-6 sm:col-span-3 row-span-1'
 
-  return cardPositionClasses[index] ?? 'col-span-6 md:col-span-4'
+  return cardPositionClasses[index] ?? 'col-span-6 lg:col-span-4'
 }
 
 function activateCard(card: GeneralMetricCard) {
@@ -853,7 +857,7 @@ onMounted(async () => {
         @click="activateCard(card)"
         @keydown="handleCardKeydown($event, card)"
       >
-        <div class="flex h-full flex-col justify-between gap-1">
+        <div class="flex h-full flex-col justify-between gap-2">
           <div class="flex items-start justify-between gap-2">
             <span class="text-xs font-medium tracking-wider text-muted-foreground truncate">{{ card.label }}</span>
             <Icon
@@ -871,14 +875,25 @@ onMounted(async () => {
             <Transition v-bind="metricSwitchTransitionProps">
               <div
                 :key="`${card.key}-${summaryTransitionKey}`"
-                class="flex min-w-0 flex-col items-start gap-0.5 md:flex-row md:items-baseline md:gap-1"
+                class="grid min-h-11 min-w-0 content-start gap-1 tabular-nums"
                 :style="getMetricSwitchStyle(index)"
               >
-                <span data-general-card-value class="min-w-0 max-w-full break-all text-sm md:text-2xl font-bold leading-none tracking-tight md:truncate">
-                  {{ card.value }}
+                <div class="flex min-w-0 items-baseline gap-1">
+                  <span data-general-card-value class="min-w-0 max-w-full break-all text-lg lg:text-2xl font-bold leading-6 tracking-tight lg:truncate">
+                    {{ card.value }}
+                  </span>
+                  <span v-if="card.secondaryValue" data-general-card-unit :class="unitClass">
+                    {{ card.unit }}
+                  </span>
+                </div>
+                <span v-if="card.secondaryValue" data-general-card-secondary :class="unitClass">
+                  {{ card.secondaryValue }} {{ card.secondaryUnit }}
                 </span>
-                <span v-if="card.unit" data-general-card-unit :class="unitClass">
+                <span v-else-if="card.unit" data-general-card-unit :class="unitClass">
                   {{ card.unit }}
+                </span>
+                <span v-else aria-hidden="true" class="h-4">
+                  &nbsp;
                 </span>
               </div>
             </Transition>
