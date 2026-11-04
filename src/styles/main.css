@@ -236,7 +236,7 @@ html.palette-emerald {
   --palette-paper: #ffffff;
   --palette-card: #ffffff;
   --palette-ink: #125239;
-  --palette-secondary: #e2f0e7;
+  --palette-secondary: #f3faf5;
   --palette-muted: #355d49;
   --palette-grid-ink: 18 82 57;
   --palette-glow: rgb(43 180 119 / 0.2);
@@ -256,7 +256,7 @@ html.palette-violet {
   --palette-paper: #ffffff;
   --palette-card: #ffffff;
   --palette-ink: #4d3173;
-  --palette-secondary: #ebe3f5;
+  --palette-secondary: #f8f5fc;
   --palette-muted: #59466d;
   --palette-grid-ink: 77 49 115;
   --palette-glow: rgb(160 112 220 / 0.19);
@@ -276,7 +276,7 @@ html.palette-amber {
   --palette-paper: #ffffff;
   --palette-card: #ffffff;
   --palette-ink: #683d0c;
-  --palette-secondary: #f2e3cc;
+  --palette-secondary: #fff9f1;
   --palette-muted: #654b30;
   --palette-grid-ink: 104 61 12;
   --palette-glow: rgb(232 155 48 / 0.19);

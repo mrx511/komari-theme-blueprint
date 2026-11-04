@@ -89,6 +89,7 @@ for (const [palette, lightInk, darkInk] of [
           darkClass: element.classList.contains('dark'),
           foreground: style.getPropertyValue('--foreground').trim(),
           card: style.getPropertyValue('--card').trim(),
+          secondary: style.getPropertyValue('--secondary').trim(),
           muted: style.getPropertyValue('--muted-foreground').trim(),
           globe: style.getPropertyValue('--globe-point').trim(),
           grid: style.getPropertyValue('--grid-ink').trim(),
@@ -121,6 +122,18 @@ for (const [palette, lightInk, darkInk] of [
       }
       expect(contrastRatio(colors.foreground, colors.card)).toBeGreaterThanOrEqual(7)
       expect(contrastRatio(colors.muted, colors.card)).toBeGreaterThanOrEqual(7)
+      if (!dark) {
+        expect(contrastRatio(colors.secondary, colors.card)).toBeLessThan(1.1)
+        const panelColors = await page.locator('.node-card [class~="bg-slate-500/5"]').first().evaluate((element) => {
+          const probe = document.createElement('span')
+          probe.style.backgroundColor = 'var(--secondary)'
+          document.body.appendChild(probe)
+          const expected = getComputedStyle(probe).backgroundColor
+          probe.remove()
+          return { actual: getComputedStyle(element).backgroundColor, expected }
+        })
+        expect(panelColors.actual).toBe(panelColors.expected)
+      }
     })
   }
 }
